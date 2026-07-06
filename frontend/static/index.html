@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PMDrop</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #090b10;
+            color: #e5e7eb;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 230px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: #0d1117;
+            border-right: 1px solid #202632;
+            padding: 24px;
+        }
+
+        .brand {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 35px;
+        }
+
+        .nav-item {
+            padding: 12px 14px;
+            border-radius: 12px;
+            color: #9ca3af;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .nav-item.active,
+        .nav-item:hover {
+            background: #151b26;
+            color: white;
+        }
+
+        .main { padding: 32px; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+
+        .node-badge {
+            color: #93c5fd;
+            background: #111827;
+            border: 1px solid #1f2937;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 14px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .card {
+            background: linear-gradient(180deg, #151b26, #10141d);
+            border: 1px solid #242b38;
+            border-radius: 18px;
+            padding: 22px;
+        }
+
+        .card-label {
+            color: #9ca3af;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .card-value {
+            font-size: 30px;
+            font-weight: 800;
+        }
+
+        .panel {
+            background: #11161f;
+            border: 1px solid #242b38;
+            border-radius: 18px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .panel-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid #242b38;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-size: 20px;
+            font-weight: 750;
+        }
+
+        .dropzone {
+            margin: 20px;
+            padding: 36px;
+            border: 1px dashed #3b82f6;
+            border-radius: 16px;
+            background: #0d1320;
+            text-align: center;
+        }
+
+        .dropzone.dragover {
+            background: #111c31;
+            border-color: #60a5fa;
+        }
+
+        .drop-title {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .muted {
+            color: #9ca3af;
+        }
+
+        button {
+            border: 0;
+            border-radius: 11px;
+            padding: 10px 15px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .choose-btn {
+            margin-top: 18px;
+            background: #2563eb;
+            color: white;
+        }
+
+        .delete-btn {
+            background: #2b1115;
+            color: #f87171;
+            border: 1px solid #7f1d1d;
+        }
+
+        .file-row,
+        .device-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 22px;
+            border-top: 1px solid #242b38;
+        }
+
+        .file-row:first-child,
+        .device-row:first-child {
+            border-top: 0;
+        }
+
+        .file-name {
+            color: #dbeafe;
+            text-decoration: none;
+            font-weight: 650;
+            word-break: break-all;
+        }
+
+        .meta {
+            color: #9ca3af;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .online {
+            color: #86efac;
+            font-weight: 800;
+        }
+
+        #status {
+            color: #93c5fd;
+            min-height: 22px;
+            margin: 0 22px 18px;
+        }
+
+        input { display: none; }
+
+        @media (max-width: 800px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar {
+                border-right: 0;
+                border-bottom: 1px solid #202632;
+            }
+            .cards { grid-template-columns: 1fr; }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand">PMDrop</div>
+
+        <div class="nav-item active" onclick="showTab('dashboard', this)">📊 Dashboard</div>
+        <div class="nav-item" onclick="showTab('files', this)">📁 Files</div>
+        <div class="nav-item" onclick="showTab('devices', this)">🖥 Devices</div>
+        <div class="nav-item" onclick="showTab('settings', this)">⚙ Settings</div>
+    </aside>
+
+    <main class="main">
+        <div class="header">
+            <h1 id="pageTitle">Dashboard</h1>
+            <div class="node-badge">local node online</div>
+        </div>
+
+        <div id="dashboardTab">
+            <div class="cards">
+                <div class="card">
+                    <div class="card-label">Files</div>
+                    <div class="card-value" id="statFiles">0</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">Devices</div>
+                    <div class="card-value" id="statDevices">0</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">Storage</div>
+                    <div class="card-value" id="statStorage">0 B</div>
+                </div>
+            </div>
+
+            <section class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Upload</div>
+                </div>
+
+                <div class="dropzone" id="dropzone">
+                    <div class="drop-title">Drop a file here</div>
+                    <div class="muted">Fast local upload to your PMDrop node.</div>
+
+                    <input type="file" id="fileInput">
+                    <button class="choose-btn" onclick="chooseFile()">Choose file</button>
+                </div>
+
+                <div id="status"></div>
+            </section>
+        </div>
+
+        <div id="filesTab" style="display:none;">
+            <section class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Files</div>
+                </div>
+                <div id="files"></div>
+            </section>
+        </div>
+
+        <div id="devicesTab" style="display:none;">
+            <section class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Devices</div>
+                </div>
+                <div id="devices"></div>
+            </section>
+        </div>
+
+        <div id="settingsTab" style="display:none;">
+            <section class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Settings</div>
+                </div>
+                <div class="file-row muted">
+                    Settings coming soon.
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+
+<script>
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const statusText = document.getElementById('status');
+
+    function showTab(tab, element) {
+        document.getElementById('dashboardTab').style.display = 'none';
+        document.getElementById('filesTab').style.display = 'none';
+        document.getElementById('devicesTab').style.display = 'none';
+        document.getElementById('settingsTab').style.display = 'none';
+
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        document.getElementById(tab + 'Tab').style.display = 'block';
+        element.classList.add('active');
+
+        const titles = {
+            dashboard: 'Dashboard',
+            files: 'Files',
+            devices: 'Devices',
+            settings: 'Settings'
+        };
+
+        document.getElementById('pageTitle').innerText = titles[tab];
+
+        loadAll();
+    }
+
+    function chooseFile() {
+        fileInput.click();
+    }
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            uploadFile(fileInput.files[0]);
+        }
+    });
+
+    dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+    });
+
+    dropzone.addEventListener('dragleave', () => {
+        dropzone.classList.remove('dragover');
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+
+        if (e.dataTransfer.files.length > 0) {
+            uploadFile(e.dataTransfer.files[0]);
+        }
+    });
+
+    async function uploadFile(file) {
+        statusText.innerText = `Uploading ${file.name}...`;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        statusText.innerText = response.ok
+            ? `Uploaded ${file.name}`
+            : `Upload failed`;
+
+        fileInput.value = '';
+        await loadAll();
+    }
+
+    async function deleteFile(file) {
+        if (!confirm(`Delete ${file}?`)) return;
+
+        await fetch(`/delete/${encodeURIComponent(file)}`, {
+            method: 'DELETE'
+        });
+
+        statusText.innerText = `Deleted ${file}`;
+        await loadAll();
+    }
+
+    async function loadStats() {
+        const response = await fetch('/stats');
+        const stats = await response.json();
+
+        document.getElementById('statFiles').innerText = stats.files;
+        document.getElementById('statDevices').innerText = stats.devices;
+        document.getElementById('statStorage').innerText = stats.storage_human;
+    }
+
+    async function loadFiles() {
+        const response = await fetch('/files');
+        const data = await response.json();
+
+        const container = document.getElementById('files');
+        container.innerHTML = '';
+
+        if (data.files.length === 0) {
+            container.innerHTML = '<div class="file-row muted">No files uploaded yet.</div>';
+            return;
+        }
+
+        data.files.forEach(file => {
+            const row = document.createElement('div');
+            row.className = 'file-row';
+
+            row.innerHTML = `
+                <div>
+                    <a class="file-name" href="/download/${encodeURIComponent(file.name)}">
+                        📄 ${file.name}
+                    </a>
+                    <div class="meta">${file.size_human} · ${file.uploaded_at_human}</div>
+                </div>
+
+                <button class="delete-btn" onclick="deleteFile('${file.name}')">
+                    Delete
+                </button>
+            `;
+
+            container.appendChild(row);
+        });
+    }
+
+    async function loadDevices() {
+        const response = await fetch('/devices');
+        const data = await response.json();
+
+        const container = document.getElementById('devices');
+        container.innerHTML = '';
+
+        if (data.devices.length === 0) {
+            container.innerHTML = '<div class="device-row muted">No devices registered yet.</div>';
+            return;
+        }
+
+        data.devices.forEach(device => {
+            const row = document.createElement('div');
+            row.className = 'device-row';
+
+            row.innerHTML = `
+                <div>
+                    <strong>🖥 ${device.name}</strong>
+                    <div class="meta">${device.ip}</div>
+                </div>
+
+                <div class="online">online</div>
+            `;
+
+            container.appendChild(row);
+        });
+    }
+
+    async function loadAll() {
+        await loadStats();
+        await loadFiles();
+        await loadDevices();
+    }
+
+    loadAll();
+</script>
+</body>
+</html>
