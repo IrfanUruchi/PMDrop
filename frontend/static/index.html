@@ -4,220 +4,56 @@
     <title>PMDrop</title>
     <style>
         * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: #090b10;
-            color: #e5e7eb;
-        }
-
-        .layout {
-            display: grid;
-            grid-template-columns: 230px 1fr;
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            background: #0d1117;
-            border-right: 1px solid #202632;
-            padding: 24px;
-        }
-
-        .brand {
-            font-size: 24px;
-            font-weight: 800;
-            margin-bottom: 35px;
-        }
-
-        .nav-item {
-            padding: 12px 14px;
-            border-radius: 12px;
-            color: #9ca3af;
-            margin-bottom: 8px;
-            cursor: pointer;
-        }
-
-        .nav-item.active,
-        .nav-item:hover {
-            background: #151b26;
-            color: white;
-        }
-
+        body { margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #090b10; color: #e5e7eb; }
+        .layout { display: grid; grid-template-columns: 230px 1fr; min-height: 100vh; }
+        .sidebar { background: #0d1117; border-right: 1px solid #202632; padding: 24px; }
+        .brand { font-size: 24px; font-weight: 800; margin-bottom: 35px; }
+        .nav-item { padding: 12px 14px; border-radius: 12px; color: #9ca3af; margin-bottom: 8px; cursor: pointer; }
+        .nav-item.active, .nav-item:hover { background: #151b26; color: white; }
         .main { padding: 32px; }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 28px;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 32px;
-        }
-
-        .node-badge {
-            color: #93c5fd;
-            background: #111827;
-            border: 1px solid #1f2937;
-            padding: 8px 12px;
-            border-radius: 999px;
-            font-size: 14px;
-        }
-
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 18px;
-            margin-bottom: 28px;
-        }
-
-        .card {
-            background: linear-gradient(180deg, #151b26, #10141d);
-            border: 1px solid #242b38;
-            border-radius: 18px;
-            padding: 22px;
-        }
-
-        .card-label {
-            color: #9ca3af;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .card-value {
-            font-size: 30px;
-            font-weight: 800;
-        }
-
-        .panel {
-            background: #11161f;
-            border: 1px solid #242b38;
-            border-radius: 18px;
-            overflow: hidden;
-            margin-bottom: 24px;
-        }
-
-        .panel-header {
-            padding: 18px 22px;
-            border-bottom: 1px solid #242b38;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .panel-title {
-            font-size: 20px;
-            font-weight: 750;
-        }
-
-        .dropzone {
-            margin: 20px;
-            padding: 36px;
-            border: 1px dashed #3b82f6;
-            border-radius: 16px;
-            background: #0d1320;
-            text-align: center;
-        }
-
-        .dropzone.dragover {
-            background: #111c31;
-            border-color: #60a5fa;
-        }
-
-        .drop-title {
-            font-size: 22px;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-
-        .muted {
-            color: #9ca3af;
-        }
-
-        button {
-            border: 0;
-            border-radius: 11px;
-            padding: 10px 15px;
-            font-weight: 800;
-            cursor: pointer;
-        }
-
-        .choose-btn {
-            margin-top: 18px;
-            background: #2563eb;
-            color: white;
-        }
-
-        .delete-btn {
-            background: #2b1115;
-            color: #f87171;
-            border: 1px solid #7f1d1d;
-        }
-
-        .file-row,
-        .device-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 22px;
-            border-top: 1px solid #242b38;
-        }
-
-        .file-row:first-child,
-        .device-row:first-child {
-            border-top: 0;
-        }
-
-        .file-name {
-            color: #dbeafe;
-            text-decoration: none;
-            font-weight: 650;
-            word-break: break-all;
-        }
-
-        .meta {
-            color: #9ca3af;
-            font-size: 14px;
-            margin-top: 4px;
-        }
-
-        .online {
-            color: #86efac;
-            font-weight: 800;
-        }
-
-        #status {
-            color: #93c5fd;
-            min-height: 22px;
-            margin: 0 22px 18px;
-        }
-
-        input { display: none; }
-
-        @media (max-width: 800px) {
-            .layout { grid-template-columns: 1fr; }
-            .sidebar {
-                border-right: 0;
-                border-bottom: 1px solid #202632;
-            }
-            .cards { grid-template-columns: 1fr; }
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
-            }
-        }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+        .header h1 { margin: 0; font-size: 32px; }
+        .node-badge { color: #93c5fd; background: #111827; border: 1px solid #1f2937; padding: 8px 12px; border-radius: 999px; font-size: 14px; }
+        .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 28px; }
+        .card { background: linear-gradient(180deg, #151b26, #10141d); border: 1px solid #242b38; border-radius: 18px; padding: 22px; }
+        .card-label { color: #9ca3af; font-size: 14px; margin-bottom: 10px; }
+        .card-value { font-size: 30px; font-weight: 800; }
+        .panel { background: #11161f; border: 1px solid #242b38; border-radius: 18px; overflow: hidden; margin-bottom: 24px; }
+        .panel-header { padding: 18px 22px; border-bottom: 1px solid #242b38; display: flex; justify-content: space-between; align-items: center; }
+        .panel-title { font-size: 20px; font-weight: 750; }
+        .dropzone { margin: 20px; padding: 36px; border: 1px dashed #3b82f6; border-radius: 16px; background: #0d1320; text-align: center; }
+        .dropzone.dragover { background: #111c31; border-color: #60a5fa; }
+        .drop-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+        .muted { color: #9ca3af; }
+        button { border: 0; border-radius: 11px; padding: 10px 15px; font-weight: 800; cursor: pointer; }
+        .choose-btn, .send-btn { background: #2563eb; color: white; border: 1px solid #3b82f6; }
+        .delete-btn { background: #2b1115; color: #f87171; border: 1px solid #7f1d1d; }
+        .file-row, .device-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-top: 1px solid #242b38; gap: 16px; }
+        .file-row:first-child, .device-row:first-child { border-top: 0; }
+        .file-name { color: #dbeafe; text-decoration: none; font-weight: 650; word-break: break-all; }
+        .meta { color: #9ca3af; font-size: 14px; margin-top: 4px; }
+        .online { color: #86efac; font-weight: 800; }
+        .offline { color: #f87171; font-weight: 800; }
+        #status { color: #93c5fd; min-height: 22px; margin: 0 22px 18px; }
+        input[type="file"] { display: none; }
+        textarea { width: 100%; min-height: 140px; border-radius: 14px; border: 1px solid #333b4a; background: #0d1320; color: #e5e7eb; padding: 14px; resize: vertical; font-family: inherit; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-card { width: 460px; max-width: calc(100vw - 32px); background: #11161f; border: 1px solid #242b38; border-radius: 18px; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,.45); }
+        .device-choice { padding: 12px; margin-top: 10px; border: 1px solid #333b4a; border-radius: 12px; cursor: pointer; background: #0d1320; }
+        .device-choice:hover { border-color: #3b82f6; }
+        .device-choice.disabled { opacity: 0.5; cursor: not-allowed; }
+        .device-choice.selected { border: 2px solid #3b82f6; background: #111c31; }
+        .action-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 14px; }
+        .action-btn { width: 100%; text-align: left; padding: 14px 16px; background: #0d1320; color: #e5e7eb; border: 1px solid #333b4a; border-radius: 14px; }
+        .action-btn:hover { border-color: #3b82f6; background: #111c31; }
+        .toast { position: fixed; right: 22px; bottom: 22px; background: #11161f; border: 1px solid #242b38; border-radius: 14px; padding: 14px 16px; box-shadow: 0 20px 60px rgba(0,0,0,.45); display: none; max-width: 420px; z-index: 2000; }
+        @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } .sidebar { border-right: 0; border-bottom: 1px solid #202632; } .cards { grid-template-columns: 1fr; } .header { flex-direction: column; align-items: flex-start; gap: 12px; } .file-row { flex-direction: column; align-items: flex-start; } }
     </style>
 </head>
-
 <body>
 <div class="layout">
     <aside class="sidebar">
         <div class="brand">PMDrop</div>
-
         <div class="nav-item active" onclick="showTab('dashboard', this)">📊 Dashboard</div>
         <div class="nav-item" onclick="showTab('files', this)">📁 Files</div>
         <div class="nav-item" onclick="showTab('devices', this)">🖥 Devices</div>
@@ -232,154 +68,319 @@
 
         <div id="dashboardTab">
             <div class="cards">
-                <div class="card">
-                    <div class="card-label">Files</div>
-                    <div class="card-value" id="statFiles">0</div>
-                </div>
-
-                <div class="card">
-                    <div class="card-label">Devices</div>
-                    <div class="card-value" id="statDevices">0</div>
-                </div>
-
-                <div class="card">
-                    <div class="card-label">Storage</div>
-                    <div class="card-value" id="statStorage">0 B</div>
-                </div>
+                <div class="card"><div class="card-label">Files</div><div class="card-value" id="statFiles">0</div></div>
+                <div class="card"><div class="card-label">Devices</div><div class="card-value" id="statDevices">0</div></div>
+                <div class="card"><div class="card-label">Storage</div><div class="card-value" id="statStorage">0 B</div></div>
             </div>
 
             <section class="panel">
-                <div class="panel-header">
-                    <div class="panel-title">Upload</div>
-                </div>
-
+                <div class="panel-header"><div class="panel-title">Quick Send</div></div>
                 <div class="dropzone" id="dropzone">
                     <div class="drop-title">Drop a file here</div>
-                    <div class="muted">Fast local upload to your PMDrop node.</div>
-
+                    <div class="muted">Upload to Pi storage, or use Devices for direct AirDrop-style sending.</div>
                     <input type="file" id="fileInput">
+                    <input type="file" id="directFileInput">
                     <button class="choose-btn" onclick="chooseFile()">Choose file</button>
                 </div>
-
                 <div id="status"></div>
             </section>
         </div>
 
         <div id="filesTab" style="display:none;">
-            <section class="panel">
-                <div class="panel-header">
-                    <div class="panel-title">Files</div>
-                </div>
-                <div id="files"></div>
-            </section>
+            <section class="panel"><div class="panel-header"><div class="panel-title">Files</div></div><div id="files"></div></section>
         </div>
 
         <div id="devicesTab" style="display:none;">
-            <section class="panel">
-                <div class="panel-header">
-                    <div class="panel-title">Devices</div>
-                </div>
-                <div id="devices"></div>
-            </section>
+            <section class="panel"><div class="panel-header"><div class="panel-title">Devices</div><div class="muted">Click an online device to send directly.</div></div><div id="devices"></div></section>
         </div>
 
         <div id="settingsTab" style="display:none;">
-            <section class="panel">
-                <div class="panel-header">
-                    <div class="panel-title">Settings</div>
-                </div>
-                <div class="file-row muted">
-                    Settings coming soon.
-                </div>
-            </section>
+            <section class="panel"><div class="panel-header"><div class="panel-title">Settings</div></div><div class="file-row muted">Settings coming soon.</div></section>
         </div>
     </main>
 </div>
 
+<div id="sendModal" class="modal">
+    <div class="modal-card">
+        <h2 style="margin-top:0;">📤 Send Stored File</h2>
+        <p id="sendFilename" class="muted"></p>
+        <div id="deviceList"></div>
+        <div style="display:flex; justify-content:flex-end; margin-top:20px; gap:10px;">
+            <button class="delete-btn" onclick="closeSendDialog()">Cancel</button>
+            <button class="send-btn" onclick="sendSelectedFile()">Send</button>
+        </div>
+    </div>
+</div>
+
+<div id="deviceActionModal" class="modal">
+    <div class="modal-card">
+        <h2 id="deviceActionTitle" style="margin-top:0;">Device</h2>
+        <p class="muted">Choose what to send directly over WebRTC.</p>
+        <div class="action-grid">
+            <button class="action-btn" onclick="openDirectFileSend()">📁 Send File</button>
+            <button class="action-btn" onclick="openTextSend()">📝 Send Text</button>
+            <button class="action-btn" onclick="sendClipboard()">📋 Send Clipboard</button>
+        </div>
+        <div style="margin-top:16px; display:flex; justify-content:flex-end;">
+            <button class="delete-btn" onclick="closeDeviceActions()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="textModal" class="modal">
+    <div class="modal-card">
+        <h2 style="margin-top:0;">📝 Send Text</h2>
+        <p id="textTarget" class="muted"></p>
+        <textarea id="textToSend" placeholder="Paste or write text here..."></textarea>
+        <div style="display:flex; justify-content:flex-end; margin-top:16px; gap:10px;">
+            <button class="delete-btn" onclick="closeTextSend()">Cancel</button>
+            <button class="send-btn" onclick="sendTextFromModal()">Send</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
 <script>
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('fileInput');
+    const directFileInput = document.getElementById('directFileInput');
     const statusText = document.getElementById('status');
 
-    function showTab(tab, element) {
-        document.getElementById('dashboardTab').style.display = 'none';
-        document.getElementById('filesTab').style.display = 'none';
-        document.getElementById('devicesTab').style.display = 'none';
-        document.getElementById('settingsTab').style.display = 'none';
+    let selectedFile = null;
+    let selectedDevice = null;
+    let actionDevice = null;
+    let pendingTransfers = {};
+    let currentIncomingMeta = null;
 
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
+    const DEVICE_NAME_KEY = "pmdrop_device_name";
+    const peerConnections = {};
+    const dataChannels = {};
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.innerText = message;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 4500);
+    }
+
+    function getBrowserDeviceName() {
+        let savedName = localStorage.getItem(DEVICE_NAME_KEY);
+        if (savedName) return savedName;
+        const platform = navigator.platform || "Browser";
+        const randomId = Math.random().toString(36).substring(2, 7);
+        savedName = `${platform}-${randomId}`;
+        localStorage.setItem(DEVICE_NAME_KEY, savedName);
+        return savedName;
+    }
+
+    async function registerThisDevice() {
+        await fetch('/devices/register', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: getBrowserDeviceName() })
         });
+    }
 
-        document.getElementById(tab + 'Tab').style.display = 'block';
-        element.classList.add('active');
+    async function heartbeatThisDevice() {
+        await fetch('/devices/heartbeat', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: getBrowserDeviceName() })
+        });
+    }
 
-        const titles = {
-            dashboard: 'Dashboard',
-            files: 'Files',
-            devices: 'Devices',
-            settings: 'Settings'
+    async function sendSignal(target, type, payload) {
+        await fetch('/signal', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sender: getBrowserDeviceName(), target, type, payload })
+        });
+    }
+
+    function createPeerConnection(peerName) {
+        if (peerConnections[peerName]) return peerConnections[peerName];
+        const pc = new RTCPeerConnection({ iceServers: [] });
+        pc.onicecandidate = async (event) => {
+            if (event.candidate) await sendSignal(peerName, 'ice', event.candidate);
+        };
+        peerConnections[peerName] = pc;
+        return pc;
+    }
+
+    async function startSender(peerName, transfer) {
+        const pc = createPeerConnection(peerName);
+        const channel = pc.createDataChannel('pmdrop');
+        setupDataChannel(peerName, channel, true, transfer);
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        await sendSignal(peerName, 'offer', offer);
+    }
+
+    function startReceiver(peerName) {
+        const pc = createPeerConnection(peerName);
+        pc.ondatachannel = (event) => setupDataChannel(peerName, event.channel, false, null);
+    }
+
+    function setupDataChannel(peerName, channel, isSender, transfer) {
+        dataChannels[peerName] = channel;
+        let receiveMeta = null;
+        let receiveChunks = [];
+        let receivedBytes = 0;
+
+        channel.binaryType = 'arraybuffer';
+
+        channel.onopen = async () => {
+            showToast(`✅ Direct channel opened with ${peerName}`);
+            if (isSender && transfer) await sendTransferOverChannel(peerName, channel, transfer);
         };
 
-        document.getElementById('pageTitle').innerText = titles[tab];
+        channel.onmessage = (event) => {
+            if (typeof event.data === 'string') {
+                const msg = JSON.parse(event.data);
 
+                if (msg.kind === 'text') {
+                    alert(`📝 Text from ${peerName}:\n\n${msg.text}`);
+                }
+
+                if (msg.kind === 'file-meta') {
+                    receiveMeta = msg;
+                    receiveChunks = [];
+                    receivedBytes = 0;
+                    showToast(`📥 Receiving ${msg.name} from ${peerName}`);
+                }
+
+                if (msg.kind === 'file-done') {
+                    const blob = new Blob(receiveChunks, { type: receiveMeta.type || 'application/octet-stream' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = receiveMeta.name;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showToast(`✅ Received ${receiveMeta.name}`);
+                }
+                return;
+            }
+
+            receiveChunks.push(event.data);
+            receivedBytes += event.data.byteLength;
+            if (receiveMeta) {
+                const pct = Math.round((receivedBytes / receiveMeta.size) * 100);
+                statusText.innerText = `Receiving ${receiveMeta.name}: ${pct}%`;
+            }
+        };
+    }
+
+    async function sendTransferOverChannel(peerName, channel, transfer) {
+        if (transfer.kind === 'text') {
+            channel.send(JSON.stringify({ kind: 'text', text: transfer.text }));
+            showToast(`📝 Text sent to ${peerName}`);
+            return;
+        }
+
+        if (transfer.kind === 'file') {
+            const file = transfer.file;
+            const chunkSize = 256 * 1024;
+            let offset = 0;
+
+            channel.send(JSON.stringify({ kind: 'file-meta', name: file.name, size: file.size, type: file.type }));
+
+            while (offset < file.size) {
+                while (channel.bufferedAmount > 8 * 1024 * 1024) {
+                    await new Promise(resolve => setTimeout(resolve, 40));
+                }
+
+                const chunk = await file.slice(offset, offset + chunkSize).arrayBuffer();
+                channel.send(chunk);
+                offset += chunk.byteLength;
+                const pct = Math.round((offset / file.size) * 100);
+                statusText.innerText = `Sending ${file.name} to ${peerName}: ${pct}%`;
+            }
+
+            channel.send(JSON.stringify({ kind: 'file-done' }));
+            showToast(`✅ Sent ${file.name} to ${peerName}`);
+        }
+    }
+
+    async function handleOffer(signal) {
+        const peerName = signal.sender;
+        startReceiver(peerName);
+        const pc = peerConnections[peerName];
+        await pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        await sendSignal(peerName, 'answer', answer);
+    }
+
+    async function handleAnswer(signal) {
+        const pc = peerConnections[signal.sender];
+        if (pc) await pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
+    }
+
+    async function handleIce(signal) {
+        const pc = peerConnections[signal.sender];
+        if (pc) await pc.addIceCandidate(new RTCIceCandidate(signal.payload));
+    }
+
+    async function pollSignals() {
+        const response = await fetch(`/signal/${encodeURIComponent(getBrowserDeviceName())}`);
+        const data = await response.json();
+
+        for (const signal of data.signals) {
+            if (signal.type === 'transfer_request') {
+                const accepted = confirm(`📤 Incoming ${signal.payload.kind} from ${signal.sender}\n\n${signal.payload.name || signal.payload.preview || ''}\n\nAccept?`);
+                if (accepted) {
+                    currentIncomingMeta = signal.payload;
+                    startReceiver(signal.sender);
+                    await sendSignal(signal.sender, 'transfer_accept', signal.payload);
+                }
+            }
+            if (signal.type === 'transfer_accept') {
+                const transfer = pendingTransfers[signal.sender];
+                if (transfer) await startSender(signal.sender, transfer);
+            }
+            if (signal.type === 'offer') await handleOffer(signal);
+            if (signal.type === 'answer') await handleAnswer(signal);
+            if (signal.type === 'ice') await handleIce(signal);
+        }
+    }
+
+    function showTab(tab, element) {
+        ['dashboardTab','filesTab','devicesTab','settingsTab'].forEach(id => document.getElementById(id).style.display = 'none');
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        document.getElementById(tab + 'Tab').style.display = 'block';
+        element.classList.add('active');
+        document.getElementById('pageTitle').innerText = { dashboard:'Dashboard', files:'Files', devices:'Devices', settings:'Settings' }[tab];
         loadAll();
     }
 
-    function chooseFile() {
-        fileInput.click();
-    }
+    function chooseFile() { fileInput.click(); }
 
-    fileInput.addEventListener('change', () => {
-        if (fileInput.files.length > 0) {
-            uploadFile(fileInput.files[0]);
-        }
+    fileInput.addEventListener('change', () => { if (fileInput.files.length > 0) uploadFile(fileInput.files[0]); });
+    directFileInput.addEventListener('change', async () => {
+        if (!selectedDevice || directFileInput.files.length === 0) return;
+        const file = directFileInput.files[0];
+        pendingTransfers[selectedDevice] = { kind: 'file', file };
+        await sendSignal(selectedDevice, 'transfer_request', { kind: 'file', name: file.name, size: file.size });
+        showToast(`📡 File request sent to ${selectedDevice}`);
+        directFileInput.value = '';
     });
 
-    dropzone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropzone.classList.add('dragover');
-    });
-
-    dropzone.addEventListener('dragleave', () => {
-        dropzone.classList.remove('dragover');
-    });
-
-    dropzone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropzone.classList.remove('dragover');
-
-        if (e.dataTransfer.files.length > 0) {
-            uploadFile(e.dataTransfer.files[0]);
-        }
-    });
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', e => { e.preventDefault(); dropzone.classList.remove('dragover'); if (e.dataTransfer.files.length > 0) uploadFile(e.dataTransfer.files[0]); });
 
     async function uploadFile(file) {
         statusText.innerText = `Uploading ${file.name}...`;
-
         const formData = new FormData();
         formData.append('file', file);
-
-        const response = await fetch('/upload', {
-            method: 'POST',
-            body: formData
-        });
-
-        statusText.innerText = response.ok
-            ? `Uploaded ${file.name}`
-            : `Upload failed`;
-
+        const response = await fetch('/upload', { method: 'POST', body: formData });
+        statusText.innerText = response.ok ? `Uploaded ${file.name}` : `Upload failed`;
         fileInput.value = '';
         await loadAll();
     }
 
     async function deleteFile(file) {
         if (!confirm(`Delete ${file}?`)) return;
-
-        await fetch(`/delete/${encodeURIComponent(file)}`, {
-            method: 'DELETE'
-        });
-
+        await fetch(`/delete/${encodeURIComponent(file)}`, { method: 'DELETE' });
         statusText.innerText = `Deleted ${file}`;
         await loadAll();
     }
@@ -387,7 +388,6 @@
     async function loadStats() {
         const response = await fetch('/stats');
         const stats = await response.json();
-
         document.getElementById('statFiles').innerText = stats.files;
         document.getElementById('statDevices').innerText = stats.devices;
         document.getElementById('statStorage').innerText = stats.storage_human;
@@ -396,32 +396,13 @@
     async function loadFiles() {
         const response = await fetch('/files');
         const data = await response.json();
-
         const container = document.getElementById('files');
         container.innerHTML = '';
-
-        if (data.files.length === 0) {
-            container.innerHTML = '<div class="file-row muted">No files uploaded yet.</div>';
-            return;
-        }
-
+        if (data.files.length === 0) { container.innerHTML = '<div class="file-row muted">No files uploaded yet.</div>'; return; }
         data.files.forEach(file => {
             const row = document.createElement('div');
             row.className = 'file-row';
-
-            row.innerHTML = `
-                <div>
-                    <a class="file-name" href="/download/${encodeURIComponent(file.name)}">
-                        📄 ${file.name}
-                    </a>
-                    <div class="meta">${file.size_human} · ${file.uploaded_at_human}</div>
-                </div>
-
-                <button class="delete-btn" onclick="deleteFile('${file.name}')">
-                    Delete
-                </button>
-            `;
-
+            row.innerHTML = `<div><a class="file-name" href="/download/${encodeURIComponent(file.name)}">📄 ${file.name}</a><div class="meta">${file.size_human} · ${file.uploaded_at_human}</div></div><div style="display:flex; gap:10px;"><button class="send-btn" onclick="showSendDialog('${file.name}')">📤 Send</button><button class="delete-btn" onclick="deleteFile('${file.name}')">Delete</button></div>`;
             container.appendChild(row);
         });
     }
@@ -429,39 +410,108 @@
     async function loadDevices() {
         const response = await fetch('/devices');
         const data = await response.json();
-
         const container = document.getElementById('devices');
         container.innerHTML = '';
-
-        if (data.devices.length === 0) {
-            container.innerHTML = '<div class="device-row muted">No devices registered yet.</div>';
-            return;
-        }
-
+        if (data.devices.length === 0) { container.innerHTML = '<div class="device-row muted">No devices registered yet.</div>'; return; }
         data.devices.forEach(device => {
             const row = document.createElement('div');
             row.className = 'device-row';
-
-            row.innerHTML = `
-                <div>
-                    <strong>🖥 ${device.name}</strong>
-                    <div class="meta">${device.ip}</div>
-                </div>
-
-                <div class="online">online</div>
-            `;
-
+            const isOnline = device.status === 'online';
+            const dot = isOnline ? '🟢' : '🔴';
+            const statusClass = isOnline ? 'online' : 'offline';
+            if (isOnline && device.name !== getBrowserDeviceName()) {
+                row.style.cursor = 'pointer';
+                row.onclick = () => showDeviceActions(device);
+            }
+            row.innerHTML = `<div><strong>${dot} ${device.name}</strong><div class="meta">${device.ip}</div><div class="meta">Last seen ${device.seconds_ago}s ago</div></div><div class="${statusClass}">${device.status}</div>`;
             container.appendChild(row);
         });
     }
 
-    async function loadAll() {
-        await loadStats();
-        await loadFiles();
-        await loadDevices();
+    async function showSendDialog(filename) {
+        selectedFile = filename;
+        selectedDevice = null;
+        document.getElementById('sendFilename').innerHTML = `Selected file: <strong>${filename}</strong>`;
+        const response = await fetch('/devices');
+        const data = await response.json();
+        const list = document.getElementById('deviceList');
+        list.innerHTML = '';
+        data.devices.forEach(device => {
+            const div = document.createElement('div');
+            const isOnline = device.status === 'online' && device.name !== getBrowserDeviceName();
+            div.className = isOnline ? 'device-choice' : 'device-choice disabled';
+            div.innerHTML = `<strong>${isOnline ? '🟢' : '🔴'} ${device.name}</strong><div class="meta">${device.ip || 'No IP'}</div><div class="meta">Last seen ${device.seconds_ago}s ago</div>`;
+            if (isOnline) div.onclick = () => { selectedDevice = device.name; document.querySelectorAll('.device-choice').forEach(c => c.classList.remove('selected')); div.classList.add('selected'); };
+            list.appendChild(div);
+        });
+        document.getElementById('sendModal').style.display = 'flex';
     }
 
+    function closeSendDialog() { document.getElementById('sendModal').style.display = 'none'; selectedFile = null; selectedDevice = null; }
+
+    async function sendSelectedFile() {
+        if (!selectedDevice) { alert('Select an online device first.'); return; }
+        alert('Stored-file direct send comes after file-from-server streaming. Use Devices → Send File for direct browser file send now.');
+        closeSendDialog();
+    }
+
+    function showDeviceActions(device) {
+        actionDevice = device;
+        document.getElementById('deviceActionTitle').innerText = `🖥 ${device.name}`;
+        document.getElementById('deviceActionModal').style.display = 'flex';
+    }
+
+    function closeDeviceActions() { document.getElementById('deviceActionModal').style.display = 'none'; actionDevice = null; }
+
+    function openDirectFileSend() {
+        selectedDevice = actionDevice.name;
+        closeDeviceActions();
+        directFileInput.click();
+    }
+
+    function openTextSend() {
+        selectedDevice = actionDevice.name;
+        document.getElementById('textTarget').innerText = `To: ${selectedDevice}`;
+        document.getElementById('textToSend').value = '';
+        closeDeviceActions();
+        document.getElementById('textModal').style.display = 'flex';
+    }
+
+    function closeTextSend() { document.getElementById('textModal').style.display = 'none'; }
+
+    async function sendTextFromModal() {
+        const text = document.getElementById('textToSend').value.trim();
+        if (!text) { alert('Write something first.'); return; }
+        await sendDirectText(selectedDevice, text);
+        closeTextSend();
+    }
+
+    async function sendClipboard() {
+        try {
+            const target = actionDevice.name;
+            const text = await navigator.clipboard.readText();
+            if (!text) { alert('Clipboard is empty.'); return; }
+            closeDeviceActions();
+            await sendDirectText(target, text);
+        } catch (err) {
+            alert('Browser blocked clipboard access. Use Send Text instead.');
+        }
+    }
+
+    async function sendDirectText(target, text) {
+        pendingTransfers[target] = { kind: 'text', text };
+        await sendSignal(target, 'transfer_request', { kind: 'text', preview: text.slice(0, 80) });
+        showToast(`📡 Text request sent to ${target}`);
+    }
+
+    async function loadAll() { await loadStats(); await loadFiles(); await loadDevices(); }
+
+    registerThisDevice();
+    heartbeatThisDevice();
     loadAll();
+    setInterval(heartbeatThisDevice, 10000);
+    setInterval(loadAll, 5000);
+    setInterval(pollSignals, 1000);
 </script>
 </body>
 </html>
