@@ -1,517 +1,2229 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>PMDrop</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <style>
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #090b10; color: #e5e7eb; }
-        .layout { display: grid; grid-template-columns: 230px 1fr; min-height: 100vh; }
-        .sidebar { background: #0d1117; border-right: 1px solid #202632; padding: 24px; }
-        .brand { font-size: 24px; font-weight: 800; margin-bottom: 35px; }
-        .nav-item { padding: 12px 14px; border-radius: 12px; color: #9ca3af; margin-bottom: 8px; cursor: pointer; }
-        .nav-item.active, .nav-item:hover { background: #151b26; color: white; }
-        .main { padding: 32px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
-        .header h1 { margin: 0; font-size: 32px; }
-        .node-badge { color: #93c5fd; background: #111827; border: 1px solid #1f2937; padding: 8px 12px; border-radius: 999px; font-size: 14px; }
-        .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 28px; }
-        .card { background: linear-gradient(180deg, #151b26, #10141d); border: 1px solid #242b38; border-radius: 18px; padding: 22px; }
-        .card-label { color: #9ca3af; font-size: 14px; margin-bottom: 10px; }
-        .card-value { font-size: 30px; font-weight: 800; }
-        .panel { background: #11161f; border: 1px solid #242b38; border-radius: 18px; overflow: hidden; margin-bottom: 24px; }
-        .panel-header { padding: 18px 22px; border-bottom: 1px solid #242b38; display: flex; justify-content: space-between; align-items: center; }
-        .panel-title { font-size: 20px; font-weight: 750; }
-        .dropzone { margin: 20px; padding: 36px; border: 1px dashed #3b82f6; border-radius: 16px; background: #0d1320; text-align: center; }
-        .dropzone.dragover { background: #111c31; border-color: #60a5fa; }
-        .drop-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
-        .muted { color: #9ca3af; }
-        button { border: 0; border-radius: 11px; padding: 10px 15px; font-weight: 800; cursor: pointer; }
-        .choose-btn, .send-btn { background: #2563eb; color: white; border: 1px solid #3b82f6; }
-        .delete-btn { background: #2b1115; color: #f87171; border: 1px solid #7f1d1d; }
-        .file-row, .device-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-top: 1px solid #242b38; gap: 16px; }
-        .file-row:first-child, .device-row:first-child { border-top: 0; }
-        .file-name { color: #dbeafe; text-decoration: none; font-weight: 650; word-break: break-all; }
-        .meta { color: #9ca3af; font-size: 14px; margin-top: 4px; }
-        .online { color: #86efac; font-weight: 800; }
-        .offline { color: #f87171; font-weight: 800; }
-        #status { color: #93c5fd; min-height: 22px; margin: 0 22px 18px; }
-        input[type="file"] { display: none; }
-        textarea { width: 100%; min-height: 140px; border-radius: 14px; border: 1px solid #333b4a; background: #0d1320; color: #e5e7eb; padding: 14px; resize: vertical; font-family: inherit; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-card { width: 460px; max-width: calc(100vw - 32px); background: #11161f; border: 1px solid #242b38; border-radius: 18px; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,.45); }
-        .device-choice { padding: 12px; margin-top: 10px; border: 1px solid #333b4a; border-radius: 12px; cursor: pointer; background: #0d1320; }
-        .device-choice:hover { border-color: #3b82f6; }
-        .device-choice.disabled { opacity: 0.5; cursor: not-allowed; }
-        .device-choice.selected { border: 2px solid #3b82f6; background: #111c31; }
-        .action-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 14px; }
-        .action-btn { width: 100%; text-align: left; padding: 14px 16px; background: #0d1320; color: #e5e7eb; border: 1px solid #333b4a; border-radius: 14px; }
-        .action-btn:hover { border-color: #3b82f6; background: #111c31; }
-        .toast { position: fixed; right: 22px; bottom: 22px; background: #11161f; border: 1px solid #242b38; border-radius: 14px; padding: 14px 16px; box-shadow: 0 20px 60px rgba(0,0,0,.45); display: none; max-width: 420px; z-index: 2000; }
-        @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } .sidebar { border-right: 0; border-bottom: 1px solid #202632; } .cards { grid-template-columns: 1fr; } .header { flex-direction: column; align-items: flex-start; gap: 12px; } .file-row { flex-direction: column; align-items: flex-start; } }
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #05070d;
+            --bg-soft: #0b1020;
+            --glass: rgba(18, 24, 42, 0.72);
+            --glass-strong: rgba(20, 28, 50, 0.92);
+            --border: rgba(148, 163, 184, 0.18);
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --blue: #60a5fa;
+            --cyan: #22d3ee;
+            --green: #86efac;
+            --red: #fb7185;
+            --yellow: #fde68a;
+            --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(37, 99, 235, 0.24), transparent 30%),
+                radial-gradient(circle at top right, rgba(34, 211, 238, 0.16), transparent 28%),
+                radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.12), transparent 26%),
+                var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+            background-size: 44px 44px;
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+        }
+
+        .shell {
+            display: grid;
+            grid-template-columns: 270px 1fr;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar {
+            padding: 28px 20px;
+            border-right: 1px solid var(--border);
+            background: rgba(5, 8, 16, 0.7);
+            backdrop-filter: blur(22px);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 34px;
+            padding: 0 8px;
+        }
+
+        .brand-logo {
+            width: 46px;
+            height: 46px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #3b82f6, #22d3ee);
+            display: grid;
+            place-items: center;
+            font-size: 24px;
+            box-shadow: 0 16px 45px rgba(59,130,246,.36);
+        }
+
+        .brand h1 {
+            font-size: 23px;
+            line-height: 1;
+            margin: 0;
+            letter-spacing: -0.04em;
+        }
+
+        .brand p {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .nav {
+            display: grid;
+            gap: 8px;
+        }
+
+        .nav-item {
+            border: 1px solid transparent;
+            color: #aab4c6;
+            padding: 13px 14px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: 180ms ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 750;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            color: white;
+            background: rgba(96, 165, 250, 0.12);
+            border-color: rgba(96, 165, 250, 0.22);
+            transform: translateX(2px);
+        }
+
+        .sidebar-card {
+            margin-top: 28px;
+            padding: 16px;
+            border-radius: 22px;
+            background: linear-gradient(180deg, rgba(96,165,250,.16), rgba(34,211,238,.07));
+            border: 1px solid rgba(96,165,250,.22);
+        }
+
+        .sidebar-card .small {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .sidebar-card .big {
+            margin-top: 7px;
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        .main {
+            padding: 34px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .title-block h2 {
+            margin: 0;
+            font-size: clamp(34px, 5vw, 62px);
+            line-height: .94;
+            letter-spacing: -0.07em;
+        }
+
+        .title-block p {
+            margin: 14px 0 0;
+            color: var(--muted);
+            font-size: 16px;
+        }
+
+        .node-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 999px;
+            background: rgba(15,23,42,.76);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(18px);
+            color: #bfdbfe;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .pulse {
+            width: 9px;
+            height: 9px;
+            border-radius: 999px;
+            background: var(--green);
+            box-shadow: 0 0 0 7px rgba(134,239,172,.12);
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.15fr .85fr;
+            gap: 22px;
+            margin-bottom: 24px;
+        }
+
+        .hero-card,
+        .panel,
+        .device-card,
+        .stat-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(24px);
+        }
+
+        .hero-card {
+            border-radius: 32px;
+            padding: 26px;
+            position: relative;
+            overflow: hidden;
+            min-height: 280px;
+        }
+
+        .hero-card::after {
+            content: "";
+            position: absolute;
+            width: 360px;
+            height: 360px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(96,165,250,.32), transparent 62%);
+            right: -120px;
+            top: -130px;
+        }
+
+        .hero-card h3 {
+            margin: 0;
+            font-size: 31px;
+            letter-spacing: -0.04em;
+        }
+
+        .hero-card p {
+            color: var(--muted);
+            max-width: 600px;
+            line-height: 1.55;
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 22px;
+            position: relative;
+            z-index: 2;
+        }
+
+        button,
+        .action-btn {
+            border: 0;
+            border-radius: 16px;
+            padding: 12px 16px;
+            font-weight: 900;
+            cursor: pointer;
+            color: white;
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(148,163,184,.18);
+            transition: 160ms ease;
+        }
+
+        button:hover,
+        .action-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(96,165,250,.42);
+        }
+
+        .primary {
+            background: linear-gradient(135deg, #2563eb, #06b6d4);
+            border-color: rgba(147,197,253,.45);
+            box-shadow: 0 18px 42px rgba(37,99,235,.28);
+        }
+
+        .danger {
+            background: rgba(127, 29, 29, .35);
+            color: #fecdd3;
+            border-color: rgba(248,113,113,.35);
+        }
+
+        .ghost {
+            background: rgba(15,23,42,.72);
+        }
+
+        .drop-zone {
+            margin-top: 18px;
+            min-height: 148px;
+            border-radius: 26px;
+            border: 1px dashed rgba(96,165,250,.5);
+            background: rgba(8, 13, 26, .62);
+            display: grid;
+            place-items: center;
+            text-align: center;
+            transition: 180ms ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .drop-zone.dragover {
+            background: rgba(37, 99, 235, .18);
+            transform: scale(1.01);
+        }
+
+        .drop-zone strong {
+            display: block;
+            font-size: 22px;
+        }
+
+        .stats-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .stat-card {
+            border-radius: 26px;
+            padding: 22px;
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        .stat-value {
+            margin-top: 8px;
+            font-size: 34px;
+            font-weight: 950;
+            letter-spacing: -0.04em;
+        }
+
+        .tabs {
+            display: none;
+        }
+
+        .tabs.active {
+            display: block;
+        }
+
+        .panel {
+            border-radius: 30px;
+            overflow: hidden;
+            margin-bottom: 22px;
+        }
+
+        .panel-head {
+            padding: 22px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-head h3 {
+            margin: 0;
+            font-size: 22px;
+            letter-spacing: -0.03em;
+        }
+
+        .device-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+            gap: 18px;
+            padding: 22px;
+        }
+
+        .device-card {
+            border-radius: 28px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: 180ms ease;
+            min-height: 205px;
+        }
+
+        .device-card.online {
+            cursor: pointer;
+        }
+
+        .device-card.online:hover {
+            transform: translateY(-5px) scale(1.01);
+            border-color: rgba(96,165,250,.5);
+            box-shadow: 0 26px 80px rgba(37,99,235,.20);
+        }
+
+        .device-card.offline {
+            opacity: .62;
+        }
+
+        .device-card.drop-target {
+            transform: translateY(-7px) scale(1.025);
+            border-color: rgba(34, 211, 238, 0.85);
+            background:
+                radial-gradient(circle at top right, rgba(34,211,238,.24), transparent 45%),
+                rgba(20, 32, 55, 0.92);
+            box-shadow:
+                0 0 0 4px rgba(34,211,238,.10),
+                0 30px 90px rgba(6,182,212,.28);
+        }
+
+        .device-card.drop-target::after {
+            content: "DROP TO SEND";
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            background: rgba(2, 8, 23, 0.74);
+            color: #cffafe;
+            font-size: 18px;
+            font-weight: 950;
+            letter-spacing: .12em;
+            backdrop-filter: blur(8px);
+        }
+
+        .device-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 20px;
+            display: grid;
+            place-items: center;
+            background: rgba(96,165,250,.16);
+            font-size: 28px;
+            border: 1px solid rgba(96,165,250,.20);
+        }
+
+        .device-name {
+            margin-top: 14px;
+            font-size: 23px;
+            font-weight: 950;
+            letter-spacing: -0.04em;
+            word-break: break-word;
+        }
+
+        .device-meta {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 7px;
+        }
+
+        .status-chip {
+            position: absolute;
+            right: 18px;
+            top: 18px;
+            font-size: 12px;
+            font-weight: 950;
+            padding: 7px 10px;
+            border-radius: 999px;
+        }
+
+        .status-chip.online {
+            color: #bbf7d0;
+            background: rgba(34,197,94,.14);
+            border: 1px solid rgba(34,197,94,.24);
+        }
+
+        .status-chip.offline {
+            color: #fecdd3;
+            background: rgba(244,63,94,.12);
+            border: 1px solid rgba(244,63,94,.20);
+        }
+
+
+        .file-list {
+            padding: 6px 0;
+        }
+
+        .file-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 14px;
+            padding: 17px 23px;
+            border-top: 1px solid var(--border);
+        }
+
+        .file-row:first-child {
+            border-top: 0;
+        }
+
+        .file-title {
+            color: #dbeafe;
+            text-decoration: none;
+            font-weight: 900;
+            word-break: break-word;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .hidden-input {
+            display: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(2,6,23,.72);
+            backdrop-filter: blur(18px);
+            z-index: 50;
+            align-items: center;
+            justify-content: center;
+            padding: 22px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-card {
+            width: min(720px, 100%);
+            max-height: calc(100vh - 44px);
+            overflow: auto;
+            background:
+                radial-gradient(circle at top right, rgba(96,165,250,.17), transparent 38%),
+                var(--glass-strong);
+            border: 1px solid var(--border);
+            border-radius: 34px;
+            padding: 26px;
+            box-shadow: var(--shadow);
+        }
+
+        .modal-title {
+            margin: 0;
+            font-size: 36px;
+            letter-spacing: -0.06em;
+        }
+
+        .modal-sub {
+            color: var(--muted);
+            margin-top: 8px;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-top: 22px;
+        }
+
+        .big-action {
+            min-height: 132px;
+            border-radius: 26px;
+            background: rgba(15,23,42,.76);
+            border: 1px solid rgba(148,163,184,.18);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 18px;
+            cursor: pointer;
+            transition: 170ms ease;
+        }
+
+        .big-action:hover {
+            transform: translateY(-4px);
+            border-color: rgba(96,165,250,.45);
+            background: rgba(37,99,235,.12);
+        }
+
+        .big-action .emoji {
+            font-size: 33px;
+        }
+
+        .big-action strong {
+            font-size: 18px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 180px;
+            resize: vertical;
+            border-radius: 22px;
+            border: 1px solid var(--border);
+            background: rgba(2,6,23,.46);
+            color: white;
+            padding: 16px;
+            font: inherit;
+            outline: none;
+        }
+
+        .toast {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            width: min(420px, calc(100vw - 48px));
+            padding: 16px;
+            border-radius: 22px;
+            background: rgba(15,23,42,.92);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(20px);
+            z-index: 80;
+            display: none;
+        }
+
+        .toast.show {
+            display: block;
+            animation: slideUp .22s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(15px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .progress-wrap {
+            margin-top: 12px;
+            height: 9px;
+            background: rgba(148,163,184,.15);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--blue), var(--cyan), var(--green));
+        }
+
+
+        .transfer-center {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            width: min(460px, calc(100vw - 48px));
+            z-index: 90;
+            display: grid;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .transfer-card {
+            pointer-events: auto;
+            padding: 16px;
+            border-radius: 22px;
+            background: rgba(15,23,42,.95);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(20px);
+        }
+
+        .transfer-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .transfer-card-title {
+            font-weight: 950;
+            word-break: break-word;
+        }
+
+        .transfer-card-meta {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .transfer-card-progress {
+            margin-top: 12px;
+            height: 9px;
+            background: rgba(148,163,184,.15);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .transfer-card-progress > div {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--blue), var(--cyan), var(--green));
+            transition: width .12s linear;
+        }
+
+        .history-list {
+            display: grid;
+            gap: 12px;
+            padding: 20px 24px 24px;
+        }
+
+        .history-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 12px;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .history-item:last-child {
+            border-bottom: 0;
+        }
+
+        .history-icon {
+            font-size: 22px;
+        }
+
+        .history-name {
+            font-weight: 900;
+            word-break: break-word;
+        }
+
+        .history-meta {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .history-status {
+            font-size: 12px;
+            font-weight: 900;
+            color: var(--muted);
+        }
+
+        @media (max-width: 900px) {
+            .shell {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: relative;
+                height: auto;
+                border-right: 0;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .nav {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .nav-item {
+                justify-content: center;
+                font-size: 0;
+            }
+
+            .nav-item span {
+                font-size: 22px;
+            }
+
+            .hero {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .main {
+                padding: 22px;
+            }
+
+            .file-row {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
+
 <body>
-<div class="layout">
+<div class="shell">
     <aside class="sidebar">
-        <div class="brand">PMDrop</div>
-        <div class="nav-item active" onclick="showTab('dashboard', this)">📊 Dashboard</div>
-        <div class="nav-item" onclick="showTab('files', this)">📁 Files</div>
-        <div class="nav-item" onclick="showTab('devices', this)">🖥 Devices</div>
-        <div class="nav-item" onclick="showTab('settings', this)">⚙ Settings</div>
+        <div class="brand">
+            <div class="brand-logo">↗</div>
+            <div>
+                <h1>PMDrop</h1>
+                <p>Private local transfer · v0.3</p>
+            </div>
+        </div>
+
+        <div class="nav">
+            <div class="nav-item active" onclick="showTab('home', this)"><span>🏠</span> Home</div>
+            <div class="nav-item" onclick="showTab('devices', this)"><span>🖥</span> Devices</div>
+            <div class="nav-item" onclick="showTab('files', this)"><span>📁</span> Files</div>
+            <div class="nav-item" onclick="showTab('settings', this)"><span>⚙️</span> Settings</div>
+        </div>
+
+        <div class="sidebar-card">
+            <div class="small">Local node</div>
+            <div class="big">🟢 Online</div>
+            <div class="small" id="myDeviceName" style="margin-top:8px;">Registering...</div>
+        </div>
     </aside>
 
     <main class="main">
-        <div class="header">
-            <h1 id="pageTitle">Dashboard</h1>
-            <div class="node-badge">local node online</div>
+        <div class="topbar">
+            <div class="title-block">
+                <h2 id="pageTitle">Your device hub.</h2>
+                <p>Send files, folders, clipboard, and text directly between browsers over your LAN.</p>
+            </div>
+            <div class="node-pill">
+                <span class="pulse"></span>
+                <span>Direct transfer ready</span>
+            </div>
         </div>
 
-        <div id="dashboardTab">
-            <div class="cards">
-                <div class="card"><div class="card-label">Files</div><div class="card-value" id="statFiles">0</div></div>
-                <div class="card"><div class="card-label">Devices</div><div class="card-value" id="statDevices">0</div></div>
-                <div class="card"><div class="card-label">Storage</div><div class="card-value" id="statStorage">0 B</div></div>
+        <section id="homeTab" class="tabs active">
+            <div class="hero">
+                <div class="hero-card">
+                    <h3>Send directly to nearby devices.</h3>
+                    <p>PMDrop is running from your Raspberry Pi, but direct transfers move browser-to-browser whenever possible. The server coordinates connections while your local network handles transfers.</p>
+
+                    <div class="quick-actions">
+                        <button class="primary" onclick="showTab('devices', document.querySelectorAll('.nav-item')[1])">🖥 Choose device</button>
+                        <button class="ghost" onclick="openQuickText()">📝 Quick Text</button>
+                        <button class="ghost" onclick="openUploadFile()">📁 Upload to Pi</button>
+                    </div>
+
+                    <div class="drop-zone" id="dropzone">
+                        <div>
+                            <strong>Drop a file here</strong>
+                            <div class="muted">Uploads to server storage. Upload here for Pi storage, or drag files directly onto an online device card.</div>
+                        </div>
+                    </div>
+                    <input class="hidden-input" type="file" id="fileInput">
+                    <input class="hidden-input" type="file" id="directFileInput" multiple>
+                    <input class="hidden-input" type="file" id="directFolderInput" webkitdirectory directory multiple>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Files</div>
+                        <div class="stat-value" id="statFiles">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Devices</div>
+                        <div class="stat-value" id="statDevices">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Storage</div>
+                        <div class="stat-value" id="statStorage">0 B</div>
+                    </div>
+                </div>
             </div>
 
             <section class="panel">
-                <div class="panel-header"><div class="panel-title">Quick Send</div></div>
-                <div class="dropzone" id="dropzone">
-                    <div class="drop-title">Drop a file here</div>
-                    <div class="muted">Upload to Pi storage, or use Devices for direct AirDrop-style sending.</div>
-                    <input type="file" id="fileInput">
-                    <input type="file" id="directFileInput">
-                    <button class="choose-btn" onclick="chooseFile()">Choose file</button>
+                <div class="panel-head">
+                    <h3>Nearby devices</h3>
+                    <button class="ghost" onclick="loadAll()">Refresh</button>
                 </div>
-                <div id="status"></div>
+                <div class="device-grid" id="homeDevices"></div>
             </section>
-        </div>
+        </section>
 
-        <div id="filesTab" style="display:none;">
-            <section class="panel"><div class="panel-header"><div class="panel-title">Files</div></div><div id="files"></div></section>
-        </div>
+        <section id="devicesTab" class="tabs">
+            <section class="panel">
+                <div class="panel-head">
+                    <h3>Devices</h3>
+                    <button class="ghost" onclick="loadDevices()">Refresh</button>
+                </div>
+                <div class="device-grid" id="devices"></div>
+            </section>
+        </section>
 
-        <div id="devicesTab" style="display:none;">
-            <section class="panel"><div class="panel-header"><div class="panel-title">Devices</div><div class="muted">Click an online device to send directly.</div></div><div id="devices"></div></section>
-        </div>
+        <section id="filesTab" class="tabs">
+            <section class="panel">
+                <div class="panel-head">
+                    <h3>Server storage</h3>
+                    <button class="primary" onclick="openUploadFile()">Upload</button>
+                </div>
+                <div class="file-list" id="files"></div>
+            </section>
+        </section>
 
-        <div id="settingsTab" style="display:none;">
-            <section class="panel"><div class="panel-header"><div class="panel-title">Settings</div></div><div class="file-row muted">Settings coming soon.</div></section>
-        </div>
+        <section id="settingsTab" class="tabs">
+            <section class="panel">
+                <div class="panel-head">
+                    <h3>Settings</h3>
+                </div>
+                <div style="padding:24px;" class="muted">
+                    
+                    <div style="display:grid;gap:18px;max-width:620px;">
+                        <div>
+                            <div style="font-weight:900;color:var(--text);margin-bottom:7px;">Device name</div>
+                            <div id="settingsDeviceName" style="margin-bottom:12px;"></div>
+                            <button class="primary" onclick="renameThisDevice()">Rename this device</button>
+                            <button class="ghost" style="margin-left:8px;" onclick="requestNotificationPermission()">Enable notifications</button>
+                        </div>
+                        <div>
+                            <div style="font-weight:900;color:var(--text);margin-bottom:7px;">Local environment</div>
+                            <div id="localEnvironment"></div>
+                        </div>
+                    </div>
+        
+                </div>
+            </section>
+        </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <h3>Transfer history</h3>
+                    <button class="ghost" onclick="clearTransferHistory()">Clear</button>
+                </div>
+                <div class="history-list" id="transferHistory"></div>
+            </section>
     </main>
 </div>
 
-<div id="sendModal" class="modal">
+<div id="deviceModal" class="modal">
     <div class="modal-card">
-        <h2 style="margin-top:0;">📤 Send Stored File</h2>
-        <p id="sendFilename" class="muted"></p>
-        <div id="deviceList"></div>
-        <div style="display:flex; justify-content:flex-end; margin-top:20px; gap:10px;">
-            <button class="delete-btn" onclick="closeSendDialog()">Cancel</button>
-            <button class="send-btn" onclick="sendSelectedFile()">Send</button>
-        </div>
-    </div>
-</div>
+        <h2 class="modal-title" id="deviceModalTitle">Device</h2>
+        <div class="modal-sub" id="deviceModalSub">Choose what to send.</div>
 
-<div id="deviceActionModal" class="modal">
-    <div class="modal-card">
-        <h2 id="deviceActionTitle" style="margin-top:0;">Device</h2>
-        <p class="muted">Choose what to send directly over WebRTC.</p>
         <div class="action-grid">
-            <button class="action-btn" onclick="openDirectFileSend()">📁 Send File</button>
-            <button class="action-btn" onclick="openTextSend()">📝 Send Text</button>
-            <button class="action-btn" onclick="sendClipboard()">📋 Send Clipboard</button>
+            <div class="big-action" onclick="actionSendFile()">
+                <div class="emoji">📁</div>
+                <strong>Send File</strong>
+                <span class="muted">Direct browser transfer</span>
+            </div>
+
+            <div class="big-action" onclick="actionSendText()">
+                <div class="emoji">📝</div>
+                <strong>Send Text</strong>
+                <span class="muted">Message, command, link</span>
+            </div>
+
+            <div class="big-action" onclick="actionSendClipboard()">
+                <div class="emoji">📋</div>
+                <strong>Clipboard</strong>
+                <span class="muted">Send copied text</span>
+            </div>
+
+            <div class="big-action" onclick="actionSendFolder()">
+                <div class="emoji">📂</div>
+                <strong>Folder</strong>
+                <span class="muted">Recursive folder transfer</span>
+            </div>
         </div>
-        <div style="margin-top:16px; display:flex; justify-content:flex-end;">
-            <button class="delete-btn" onclick="closeDeviceActions()">Cancel</button>
+
+        <div style="display:flex; justify-content:flex-end; margin-top:22px;">
+            <button class="danger" onclick="closeDeviceModal()">Close</button>
         </div>
     </div>
 </div>
 
 <div id="textModal" class="modal">
     <div class="modal-card">
-        <h2 style="margin-top:0;">📝 Send Text</h2>
-        <p id="textTarget" class="muted"></p>
-        <textarea id="textToSend" placeholder="Paste or write text here..."></textarea>
-        <div style="display:flex; justify-content:flex-end; margin-top:16px; gap:10px;">
-            <button class="delete-btn" onclick="closeTextSend()">Cancel</button>
-            <button class="send-btn" onclick="sendTextFromModal()">Send</button>
+        <h2 class="modal-title">Send Text</h2>
+        <div class="modal-sub" id="textModalSub">Paste anything and send it directly.</div>
+        <textarea id="quickTextBox" placeholder="Paste text, command, note, or link..."></textarea>
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:18px;">
+            <button class="danger" onclick="closeTextModal()">Cancel</button>
+            <button class="primary" onclick="sendTextFromModal()">Send</button>
         </div>
     </div>
 </div>
 
-<div id="toast" class="toast"></div>
+<div id="transferCenter" class="transfer-center"></div>
+
+<div id="toast" class="toast">
+    <strong id="toastTitle">PMDrop</strong>
+    <div class="muted" id="toastText" style="margin-top:6px;"></div>
+    <div class="progress-wrap">
+        <div class="progress-bar" id="toastProgress"></div>
+    </div>
+</div>
 
 <script>
-    const dropzone = document.getElementById('dropzone');
-    const fileInput = document.getElementById('fileInput');
-    const directFileInput = document.getElementById('directFileInput');
-    const statusText = document.getElementById('status');
-
-    let selectedFile = null;
-    let selectedDevice = null;
-    let actionDevice = null;
-    let pendingTransfers = {};
-    let currentIncomingMeta = null;
-
     const DEVICE_NAME_KEY = "pmdrop_device_name";
+    const dropzone = document.getElementById("dropzone");
+    const fileInput = document.getElementById("fileInput");
+    const directFileInput = document.getElementById("directFileInput");
+    const directFolderInput = document.getElementById("directFolderInput");
+
+    let selectedActionDevice = null;
+    let textTargetDevice = null;
+
     const peerConnections = {};
     const dataChannels = {};
-
-    function showToast(message) {
-        const toast = document.getElementById('toast');
-        toast.innerText = message;
-        toast.style.display = 'block';
-        setTimeout(() => { toast.style.display = 'none'; }, 4500);
-    }
+    const pendingTransfers = {};
+    const pendingIceCandidates = {};
+    let signalPollInProgress = false;
+    const TRANSFER_HISTORY_KEY = "pmdrop_transfer_history";
+    const activeTransferCards = {};
 
     function getBrowserDeviceName() {
         let savedName = localStorage.getItem(DEVICE_NAME_KEY);
         if (savedName) return savedName;
-        const platform = navigator.platform || "Browser";
-        const randomId = Math.random().toString(36).substring(2, 7);
-        savedName = `${platform}-${randomId}`;
+
+        const detected = detectLocalEnvironment();
+        const randomId = Math.random().toString(36).substring(2, 6).toUpperCase();
+        savedName = `${detected.deviceLabel}-${randomId}`;
         localStorage.setItem(DEVICE_NAME_KEY, savedName);
         return savedName;
     }
 
+    function detectLocalEnvironment() {
+        const ua = navigator.userAgent || "";
+        const platform = navigator.userAgentData?.platform || navigator.platform || "Unknown";
+        const lower = `${ua} ${platform}`.toLowerCase();
+
+        let os = "Unknown OS";
+        let deviceLabel = "Browser";
+
+        if (/iphone|ipad|ipod/.test(lower)) {
+            os = "iOS / iPadOS";
+            deviceLabel = "Mobile";
+        } else if (/android/.test(lower)) {
+            os = "Android";
+            deviceLabel = "Mobile";
+        } else if (/mac/.test(lower)) {
+            os = "macOS";
+            deviceLabel = "Mac";
+        } else if (/win/.test(lower)) {
+            os = "Windows";
+            deviceLabel = "Windows";
+        } else if (/linux|x11/.test(lower)) {
+            os = "Linux";
+            deviceLabel = "Linux";
+        }
+
+        let browser = "Browser";
+        if (/edg\//i.test(ua)) browser = "Microsoft Edge";
+        else if (/opr\//i.test(ua)) browser = "Opera";
+        else if (/firefox\//i.test(ua)) browser = "Firefox";
+        else if (/chrome\//i.test(ua)) browser = "Chrome";
+        else if (/safari\//i.test(ua)) browser = "Safari";
+
+        return {
+            os,
+            browser,
+            platform,
+            deviceLabel,
+            logicalProcessors: navigator.hardwareConcurrency || null,
+            memoryGB: navigator.deviceMemory || null
+        };
+    }
+
+    function renameThisDevice() {
+        const currentName = getBrowserDeviceName();
+        const nextName = prompt("Choose a name for this device:", currentName);
+        if (!nextName) return;
+
+        const cleanName = nextName.trim().slice(0, 64);
+        if (!cleanName) return;
+
+        localStorage.setItem(DEVICE_NAME_KEY, cleanName);
+        document.getElementById("myDeviceName").innerText = cleanName;
+        updateSettingsPanel();
+        registerThisDevice();
+        heartbeatThisDevice();
+        showToast("Device renamed", cleanName, 100);
+    }
+
+    function updateSettingsPanel() {
+        const env = detectLocalEnvironment();
+        const deviceName = getBrowserDeviceName();
+
+        const nameTarget = document.getElementById("settingsDeviceName");
+        const envTarget = document.getElementById("localEnvironment");
+
+        if (nameTarget) {
+            nameTarget.innerHTML = `<strong>${escapeHtml(deviceName)}</strong>`;
+        }
+
+        if (envTarget) {
+            const details = [
+                env.os,
+                env.browser,
+                env.logicalProcessors ? `${env.logicalProcessors} logical processors` : null,
+                env.memoryGB ? `${env.memoryGB} GB device memory reported by browser` : null
+            ].filter(Boolean);
+
+            envTarget.innerHTML = details.map(item =>
+                `<div style="margin:5px 0;">${escapeHtml(item)}</div>`
+            ).join("");
+        }
+    }
+
+    function getDeviceEmoji(deviceName) {
+        const n = (deviceName || "").toLowerCase();
+
+        if (n.includes("iphone") || n.includes("ipad") || n.includes("android") ||
+            n.includes("pixel") || n.includes("mobile") || n.includes("phone")) {
+            return "📱";
+        }
+
+        if (n.includes("mac") || n.includes("apple")) return "💻";
+        if (n.includes("windows") || n.includes("desktop") || n.includes("pc")) return "🖥";
+        if (n.includes("linux") || n.includes("ubuntu") || n.includes("debian")) return "💻";
+        if (n.includes("raspberry") || n.includes("server")) return "🖧";
+
+        return "💻";
+    }
+
     async function registerThisDevice() {
-        await fetch('/devices/register', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: getBrowserDeviceName() })
+        const deviceName = getBrowserDeviceName();
+        document.getElementById("myDeviceName").innerText = deviceName;
+
+        await fetch("/devices/register", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ name: deviceName })
         });
     }
 
     async function heartbeatThisDevice() {
-        await fetch('/devices/heartbeat', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
+        await fetch("/devices/heartbeat", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify({ name: getBrowserDeviceName() })
         });
     }
 
-    async function sendSignal(target, type, payload) {
-        await fetch('/signal', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sender: getBrowserDeviceName(), target, type, payload })
-        });
-    }
-
-    function createPeerConnection(peerName) {
-        if (peerConnections[peerName]) return peerConnections[peerName];
-        const pc = new RTCPeerConnection({ iceServers: [] });
-        pc.onicecandidate = async (event) => {
-            if (event.candidate) await sendSignal(peerName, 'ice', event.candidate);
-        };
-        peerConnections[peerName] = pc;
-        return pc;
-    }
-
-    async function startSender(peerName, transfer) {
-        const pc = createPeerConnection(peerName);
-        const channel = pc.createDataChannel('pmdrop');
-        setupDataChannel(peerName, channel, true, transfer);
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        await sendSignal(peerName, 'offer', offer);
-    }
-
-    function startReceiver(peerName) {
-        const pc = createPeerConnection(peerName);
-        pc.ondatachannel = (event) => setupDataChannel(peerName, event.channel, false, null);
-    }
-
-    function setupDataChannel(peerName, channel, isSender, transfer) {
-        dataChannels[peerName] = channel;
-        let receiveMeta = null;
-        let receiveChunks = [];
-        let receivedBytes = 0;
-
-        channel.binaryType = 'arraybuffer';
-
-        channel.onopen = async () => {
-            showToast(`✅ Direct channel opened with ${peerName}`);
-            if (isSender && transfer) await sendTransferOverChannel(peerName, channel, transfer);
-        };
-
-        channel.onmessage = (event) => {
-            if (typeof event.data === 'string') {
-                const msg = JSON.parse(event.data);
-
-                if (msg.kind === 'text') {
-                    alert(`📝 Text from ${peerName}:\n\n${msg.text}`);
-                }
-
-                if (msg.kind === 'file-meta') {
-                    receiveMeta = msg;
-                    receiveChunks = [];
-                    receivedBytes = 0;
-                    showToast(`📥 Receiving ${msg.name} from ${peerName}`);
-                }
-
-                if (msg.kind === 'file-done') {
-                    const blob = new Blob(receiveChunks, { type: receiveMeta.type || 'application/octet-stream' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = receiveMeta.name;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    showToast(`✅ Received ${receiveMeta.name}`);
-                }
-                return;
-            }
-
-            receiveChunks.push(event.data);
-            receivedBytes += event.data.byteLength;
-            if (receiveMeta) {
-                const pct = Math.round((receivedBytes / receiveMeta.size) * 100);
-                statusText.innerText = `Receiving ${receiveMeta.name}: ${pct}%`;
-            }
-        };
-    }
-
-    async function sendTransferOverChannel(peerName, channel, transfer) {
-        if (transfer.kind === 'text') {
-            channel.send(JSON.stringify({ kind: 'text', text: transfer.text }));
-            showToast(`📝 Text sent to ${peerName}`);
-            return;
-        }
-
-        if (transfer.kind === 'file') {
-            const file = transfer.file;
-            const chunkSize = 256 * 1024;
-            let offset = 0;
-
-            channel.send(JSON.stringify({ kind: 'file-meta', name: file.name, size: file.size, type: file.type }));
-
-            while (offset < file.size) {
-                while (channel.bufferedAmount > 8 * 1024 * 1024) {
-                    await new Promise(resolve => setTimeout(resolve, 40));
-                }
-
-                const chunk = await file.slice(offset, offset + chunkSize).arrayBuffer();
-                channel.send(chunk);
-                offset += chunk.byteLength;
-                const pct = Math.round((offset / file.size) * 100);
-                statusText.innerText = `Sending ${file.name} to ${peerName}: ${pct}%`;
-            }
-
-            channel.send(JSON.stringify({ kind: 'file-done' }));
-            showToast(`✅ Sent ${file.name} to ${peerName}`);
-        }
-    }
-
-    async function handleOffer(signal) {
-        const peerName = signal.sender;
-        startReceiver(peerName);
-        const pc = peerConnections[peerName];
-        await pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        await sendSignal(peerName, 'answer', answer);
-    }
-
-    async function handleAnswer(signal) {
-        const pc = peerConnections[signal.sender];
-        if (pc) await pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
-    }
-
-    async function handleIce(signal) {
-        const pc = peerConnections[signal.sender];
-        if (pc) await pc.addIceCandidate(new RTCIceCandidate(signal.payload));
-    }
-
-    async function pollSignals() {
-        const response = await fetch(`/signal/${encodeURIComponent(getBrowserDeviceName())}`);
-        const data = await response.json();
-
-        for (const signal of data.signals) {
-            if (signal.type === 'transfer_request') {
-                const accepted = confirm(`📤 Incoming ${signal.payload.kind} from ${signal.sender}\n\n${signal.payload.name || signal.payload.preview || ''}\n\nAccept?`);
-                if (accepted) {
-                    currentIncomingMeta = signal.payload;
-                    startReceiver(signal.sender);
-                    await sendSignal(signal.sender, 'transfer_accept', signal.payload);
-                }
-            }
-            if (signal.type === 'transfer_accept') {
-                const transfer = pendingTransfers[signal.sender];
-                if (transfer) await startSender(signal.sender, transfer);
-            }
-            if (signal.type === 'offer') await handleOffer(signal);
-            if (signal.type === 'answer') await handleAnswer(signal);
-            if (signal.type === 'ice') await handleIce(signal);
-        }
-    }
-
     function showTab(tab, element) {
-        ['dashboardTab','filesTab','devicesTab','settingsTab'].forEach(id => document.getElementById(id).style.display = 'none');
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-        document.getElementById(tab + 'Tab').style.display = 'block';
-        element.classList.add('active');
-        document.getElementById('pageTitle').innerText = { dashboard:'Dashboard', files:'Files', devices:'Devices', settings:'Settings' }[tab];
+        document.querySelectorAll(".tabs").forEach(t => t.classList.remove("active"));
+        document.getElementById(tab + "Tab").classList.add("active");
+
+        document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+        if (element) element.classList.add("active");
+
+        const titles = {
+            home: "Your device hub.",
+            devices: "Nearby devices.",
+            files: "Server storage.",
+            settings: "Settings."
+        };
+        document.getElementById("pageTitle").innerText = titles[tab] || "PMDrop";
+        if (tab === "settings") {
+            updateSettingsPanel();
+            renderTransferHistory();
+        }
         loadAll();
     }
 
-    function chooseFile() { fileInput.click(); }
+    function openUploadFile() {
+        fileInput.click();
+    }
 
-    fileInput.addEventListener('change', () => { if (fileInput.files.length > 0) uploadFile(fileInput.files[0]); });
-    directFileInput.addEventListener('change', async () => {
-        if (!selectedDevice || directFileInput.files.length === 0) return;
-        const file = directFileInput.files[0];
-        pendingTransfers[selectedDevice] = { kind: 'file', file };
-        await sendSignal(selectedDevice, 'transfer_request', { kind: 'file', name: file.name, size: file.size });
-        showToast(`📡 File request sent to ${selectedDevice}`);
-        directFileInput.value = '';
+    fileInput.addEventListener("change", () => {
+        if (fileInput.files.length > 0) uploadFile(fileInput.files[0]);
     });
 
-    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
-    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
-    dropzone.addEventListener('drop', e => { e.preventDefault(); dropzone.classList.remove('dragover'); if (e.dataTransfer.files.length > 0) uploadFile(e.dataTransfer.files[0]); });
+    directFileInput.addEventListener("change", () => {
+        if (directFileInput.files.length > 0 && selectedActionDevice) {
+            startDirectFilesTransfer(selectedActionDevice.name, Array.from(directFileInput.files));
+        }
+        directFileInput.value = "";
+    });
+
+
+    directFolderInput.addEventListener("change", () => {
+        if (directFolderInput.files.length > 0 && selectedActionDevice) {
+            const entries = Array.from(directFolderInput.files).map(file => ({
+                file,
+                relativePath: file.webkitRelativePath || file.name
+            }));
+            startDirectFilesTransfer(selectedActionDevice.name, entries, true);
+        }
+        directFolderInput.value = "";
+    });
+
+    dropzone.addEventListener("dragover", e => {
+        e.preventDefault();
+        dropzone.classList.add("dragover");
+    });
+
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+
+    dropzone.addEventListener("drop", e => {
+        e.preventDefault();
+        dropzone.classList.remove("dragover");
+        if (e.dataTransfer.files.length > 0) uploadFile(e.dataTransfer.files[0]);
+    });
 
     async function uploadFile(file) {
-        statusText.innerText = `Uploading ${file.name}...`;
+        showToast("Uploading to server", file.name, 20);
         const formData = new FormData();
-        formData.append('file', file);
-        const response = await fetch('/upload', { method: 'POST', body: formData });
-        statusText.innerText = response.ok ? `Uploaded ${file.name}` : `Upload failed`;
-        fileInput.value = '';
+        formData.append("file", file);
+
+        const response = await fetch("/upload", { method: "POST", body: formData });
+        showToast(response.ok ? "Uploaded" : "Upload failed", file.name, response.ok ? 100 : 0);
         await loadAll();
     }
 
     async function deleteFile(file) {
         if (!confirm(`Delete ${file}?`)) return;
-        await fetch(`/delete/${encodeURIComponent(file)}`, { method: 'DELETE' });
-        statusText.innerText = `Deleted ${file}`;
+        await fetch(`/delete/${encodeURIComponent(file)}`, { method: "DELETE" });
+        showToast("Deleted", file, 100);
         await loadAll();
     }
 
     async function loadStats() {
-        const response = await fetch('/stats');
+        const response = await fetch("/stats");
         const stats = await response.json();
-        document.getElementById('statFiles').innerText = stats.files;
-        document.getElementById('statDevices').innerText = stats.devices;
-        document.getElementById('statStorage').innerText = stats.storage_human;
+
+        document.getElementById("statFiles").innerText = stats.files ?? 0;
+        document.getElementById("statDevices").innerText = stats.devices ?? 0;
+        document.getElementById("statStorage").innerText = stats.storage_human ?? "0 B";
     }
 
     async function loadFiles() {
-        const response = await fetch('/files');
+        const response = await fetch("/files");
         const data = await response.json();
-        const container = document.getElementById('files');
-        container.innerHTML = '';
-        if (data.files.length === 0) { container.innerHTML = '<div class="file-row muted">No files uploaded yet.</div>'; return; }
+
+        const container = document.getElementById("files");
+        container.innerHTML = "";
+
+        if (!data.files || data.files.length === 0) {
+            container.innerHTML = `<div class="file-row muted">No files uploaded yet.</div>`;
+            return;
+        }
+
         data.files.forEach(file => {
-            const row = document.createElement('div');
-            row.className = 'file-row';
-            row.innerHTML = `<div><a class="file-name" href="/download/${encodeURIComponent(file.name)}">📄 ${file.name}</a><div class="meta">${file.size_human} · ${file.uploaded_at_human}</div></div><div style="display:flex; gap:10px;"><button class="send-btn" onclick="showSendDialog('${file.name}')">📤 Send</button><button class="delete-btn" onclick="deleteFile('${file.name}')">Delete</button></div>`;
+            const row = document.createElement("div");
+            row.className = "file-row";
+
+            row.innerHTML = `
+                <div>
+                    <a class="file-title" href="/download/${encodeURIComponent(file.name)}">📄 ${file.name}</a>
+                    <div class="device-meta">${file.size_human || ""} · ${file.uploaded_at_human || ""}</div>
+                </div>
+                <div class="file-actions">
+                    <button class="ghost" onclick="openFileSendDialog('${escapeJs(file.name)}')">📤 Send</button>
+                    <button class="danger" onclick="deleteFile('${escapeJs(file.name)}')">Delete</button>
+                </div>
+            `;
             container.appendChild(row);
         });
     }
 
     async function loadDevices() {
-        const response = await fetch('/devices');
+        const response = await fetch("/devices");
         const data = await response.json();
-        const container = document.getElementById('devices');
-        container.innerHTML = '';
-        if (data.devices.length === 0) { container.innerHTML = '<div class="device-row muted">No devices registered yet.</div>'; return; }
-        data.devices.forEach(device => {
-            const row = document.createElement('div');
-            row.className = 'device-row';
-            const isOnline = device.status === 'online';
-            const dot = isOnline ? '🟢' : '🔴';
-            const statusClass = isOnline ? 'online' : 'offline';
-            if (isOnline && device.name !== getBrowserDeviceName()) {
-                row.style.cursor = 'pointer';
-                row.onclick = () => showDeviceActions(device);
+
+        renderDeviceGrid(document.getElementById("devices"), data.devices || []);
+        renderDeviceGrid(document.getElementById("homeDevices"), (data.devices || []).slice(0, 6));
+    }
+
+    function renderDeviceGrid(container, devices) {
+        container.innerHTML = "";
+
+        if (devices.length === 0) {
+            container.innerHTML = `<div class="muted" style="padding:12px;">No devices registered yet.</div>`;
+            return;
+        }
+
+        devices.forEach(device => {
+            const isOnline = device.status === "online";
+            const card = document.createElement("div");
+            card.className = `device-card ${isOnline ? "online" : "offline"}`;
+
+            if (isOnline) {
+                card.onclick = () => openDeviceModal(device);
+
+                card.addEventListener("dragenter", event => {
+                    event.preventDefault();
+                    card.classList.add("drop-target");
+                });
+
+                card.addEventListener("dragover", event => {
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = "copy";
+                    card.classList.add("drop-target");
+                });
+
+                card.addEventListener("dragleave", event => {
+                    if (!card.contains(event.relatedTarget)) {
+                        card.classList.remove("drop-target");
+                    }
+                });
+
+                card.addEventListener("drop", async event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    card.classList.remove("drop-target");
+
+                    const entries = await collectDroppedEntries(event.dataTransfer);
+
+                    if (entries.length === 0) {
+                        showToast("Nothing to send", "Drop files or a folder onto the device card.", 0);
+                        return;
+                    }
+
+                    const hasFolderPaths = entries.some(entry =>
+                        entry.relativePath && entry.relativePath.includes("/")
+                    );
+
+                    startDirectFilesTransfer(device.name, entries, hasFolderPaths);
+                });
             }
-            row.innerHTML = `<div><strong>${dot} ${device.name}</strong><div class="meta">${device.ip}</div><div class="meta">Last seen ${device.seconds_ago}s ago</div></div><div class="${statusClass}">${device.status}</div>`;
-            container.appendChild(row);
+
+
+            card.innerHTML = `
+                <div class="status-chip ${isOnline ? "online" : "offline"}">
+                    ${isOnline ? "ONLINE" : "OFFLINE"}
+                </div>
+                <div class="device-icon">${getDeviceEmoji(device.name)}</div>
+                <div class="device-name">${device.name}</div>
+                <div class="device-meta">${device.ip || "No IP"} · Last seen ${device.seconds_ago ?? "?"}s ago</div>
+                <div class="device-meta" style="margin-top:18px;">
+                    Browser endpoint · Local network
+                </div>
+            `;
+
+
+            container.appendChild(card);
         });
     }
 
-    async function showSendDialog(filename) {
-        selectedFile = filename;
-        selectedDevice = null;
-        document.getElementById('sendFilename').innerHTML = `Selected file: <strong>${filename}</strong>`;
-        const response = await fetch('/devices');
-        const data = await response.json();
-        const list = document.getElementById('deviceList');
-        list.innerHTML = '';
-        data.devices.forEach(device => {
-            const div = document.createElement('div');
-            const isOnline = device.status === 'online' && device.name !== getBrowserDeviceName();
-            div.className = isOnline ? 'device-choice' : 'device-choice disabled';
-            div.innerHTML = `<strong>${isOnline ? '🟢' : '🔴'} ${device.name}</strong><div class="meta">${device.ip || 'No IP'}</div><div class="meta">Last seen ${device.seconds_ago}s ago</div>`;
-            if (isOnline) div.onclick = () => { selectedDevice = device.name; document.querySelectorAll('.device-choice').forEach(c => c.classList.remove('selected')); div.classList.add('selected'); };
-            list.appendChild(div);
-        });
-        document.getElementById('sendModal').style.display = 'flex';
+
+
+    async function collectDroppedEntries(dataTransfer) {
+        const items = Array.from(dataTransfer.items || []);
+        const collected = [];
+
+        if (items.length && items.some(item => typeof item.webkitGetAsEntry === "function")) {
+            for (const item of items) {
+                const entry = item.webkitGetAsEntry?.();
+                if (entry) {
+                    await walkFileSystemEntry(entry, "", collected);
+                }
+            }
+            return collected;
+        }
+
+        return Array.from(dataTransfer.files || []).map(file => ({
+            file,
+            relativePath: file.name
+        }));
     }
 
-    function closeSendDialog() { document.getElementById('sendModal').style.display = 'none'; selectedFile = null; selectedDevice = null; }
+    async function walkFileSystemEntry(entry, parentPath, collected) {
+        const currentPath = parentPath ? `${parentPath}/${entry.name}` : entry.name;
 
-    async function sendSelectedFile() {
-        if (!selectedDevice) { alert('Select an online device first.'); return; }
-        alert('Stored-file direct send comes after file-from-server streaming. Use Devices → Send File for direct browser file send now.');
-        closeSendDialog();
-    }
+        if (entry.isFile) {
+            const file = await new Promise((resolve, reject) => entry.file(resolve, reject));
+            collected.push({
+                file,
+                relativePath: currentPath
+            });
+            return;
+        }
 
-    function showDeviceActions(device) {
-        actionDevice = device;
-        document.getElementById('deviceActionTitle').innerText = `🖥 ${device.name}`;
-        document.getElementById('deviceActionModal').style.display = 'flex';
-    }
+        if (entry.isDirectory) {
+            const reader = entry.createReader();
+            let batch = [];
 
-    function closeDeviceActions() { document.getElementById('deviceActionModal').style.display = 'none'; actionDevice = null; }
-
-    function openDirectFileSend() {
-        selectedDevice = actionDevice.name;
-        closeDeviceActions();
-        directFileInput.click();
-    }
-
-    function openTextSend() {
-        selectedDevice = actionDevice.name;
-        document.getElementById('textTarget').innerText = `To: ${selectedDevice}`;
-        document.getElementById('textToSend').value = '';
-        closeDeviceActions();
-        document.getElementById('textModal').style.display = 'flex';
-    }
-
-    function closeTextSend() { document.getElementById('textModal').style.display = 'none'; }
-
-    async function sendTextFromModal() {
-        const text = document.getElementById('textToSend').value.trim();
-        if (!text) { alert('Write something first.'); return; }
-        await sendDirectText(selectedDevice, text);
-        closeTextSend();
-    }
-
-    async function sendClipboard() {
-        try {
-            const target = actionDevice.name;
-            const text = await navigator.clipboard.readText();
-            if (!text) { alert('Clipboard is empty.'); return; }
-            closeDeviceActions();
-            await sendDirectText(target, text);
-        } catch (err) {
-            alert('Browser blocked clipboard access. Use Send Text instead.');
+            do {
+                batch = await new Promise((resolve, reject) => reader.readEntries(resolve, reject));
+                for (const child of batch) {
+                    await walkFileSystemEntry(child, currentPath, collected);
+                }
+            } while (batch.length > 0);
         }
     }
 
-    async function sendDirectText(target, text) {
-        pendingTransfers[target] = { kind: 'text', text };
-        await sendSignal(target, 'transfer_request', { kind: 'text', preview: text.slice(0, 80) });
-        showToast(`📡 Text request sent to ${target}`);
+    function openDeviceModal(device) {
+        selectedActionDevice = device;
+        document.getElementById("deviceModalTitle").innerText = `${getDeviceEmoji(device.name)} ${device.name}`;
+        document.getElementById("deviceModalSub").innerText = `${device.ip || ""} · Choose what to send.`;
+        document.getElementById("deviceModal").classList.add("show");
     }
 
-    async function loadAll() { await loadStats(); await loadFiles(); await loadDevices(); }
+    function closeDeviceModal() {
+        document.getElementById("deviceModal").classList.remove("show");
+    }
+
+    function actionSendFile() {
+        if (!selectedActionDevice) return;
+        directFileInput.click();
+        closeDeviceModal();
+    }
+
+    function actionSendFolder() {
+        if (!selectedActionDevice) return;
+        directFolderInput.click();
+        closeDeviceModal();
+    }
+
+    function actionSendText() {
+        if (!selectedActionDevice) return;
+        textTargetDevice = selectedActionDevice.name;
+        document.getElementById("textModalSub").innerText = `Sending text to ${textTargetDevice}`;
+        document.getElementById("quickTextBox").value = "";
+        document.getElementById("textModal").classList.add("show");
+        closeDeviceModal();
+    }
+
+    async function actionSendClipboard() {
+        if (!selectedActionDevice) return;
+        try {
+            const text = await navigator.clipboard.readText();
+            if (!text) {
+                showToast("Clipboard empty", "Nothing to send.", 0);
+                return;
+            }
+            await sendDirectText(selectedActionDevice.name, text);
+            closeDeviceModal();
+        } catch (e) {
+            showToast("Clipboard blocked", "Browser needs clipboard permission.", 0);
+        }
+    }
+
+    function openQuickText() {
+        textTargetDevice = null;
+        document.getElementById("textModalSub").innerText = "Pick target from Devices for direct send, or write note for later.";
+        document.getElementById("quickTextBox").value = "";
+        document.getElementById("textModal").classList.add("show");
+    }
+
+    function closeTextModal() {
+        document.getElementById("textModal").classList.remove("show");
+    }
+
+    async function sendTextFromModal() {
+        const text = document.getElementById("quickTextBox").value.trim();
+        if (!text) return;
+
+        if (!textTargetDevice) {
+            showToast("Choose a device first", "Open Devices → click a device → Send Text.", 0);
+            return;
+        }
+
+        await sendDirectText(textTargetDevice, text);
+        closeTextModal();
+    }
+
+    async function openFileSendDialog(filename) {
+        const response = await fetch("/devices");
+        const data = await response.json();
+        const online = (data.devices || []).filter(d => d.status === "online" && d.name !== getBrowserDeviceName());
+        if (online.length === 0) {
+            showToast("No online devices", "Open PMDrop on another browser/device.", 0);
+            return;
+        }
+
+        const names = online.map((d, i) => `${i+1}. ${d.name}`).join("\n");
+        const pick = prompt(`Send ${filename} to:\n\n${names}\n\nType number:`);
+        const idx = parseInt(pick, 10) - 1;
+        if (!online[idx]) return;
+
+        showToast("Stored file send", "Direct sending of stored files is coming soon. Use direct file action for now.", 0);
+    }
+
+    async function sendSignal(target, type, payload) {
+        try {
+            const response = await fetch("/signal", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    sender: getBrowserDeviceName(),
+                    target,
+                    type,
+                    payload
+                })
+            });
+
+            return response.ok;
+        } catch (error) {
+            console.error("Signal send failed:", error);
+            return false;
+        }
+    }
+
+    function createPeerConnection(peerName) {
+        const existing = peerConnections[peerName];
+        if (existing && existing.connectionState !== "closed") {
+            return existing;
+        }
+
+        const pc = new RTCPeerConnection({ iceServers: [] });
+
+        pc.onicecandidate = async event => {
+            if (event.candidate) {
+                await sendSignal(peerName, "ice", event.candidate.toJSON());
+            }
+        };
+
+        pc.onconnectionstatechange = () => {
+            const state = pc.connectionState;
+
+            if (state === "connected") {
+                showToast("Direct connection ready", `Connected to ${peerName}`, 100);
+            }
+
+            if (state === "failed" || state === "disconnected" || state === "closed") {
+                const pending = pendingTransfers[peerName];
+                if (pending?.timeoutId) clearTimeout(pending.timeoutId);
+
+                if (state === "failed") {
+                    showToast(
+                        "Direct connection failed",
+                        `Could not connect to ${peerName}. Keep PMDrop open on both devices and try again.`,
+                        0
+                    );
+                }
+
+                if (dataChannels[peerName]?.readyState !== "open") {
+                    delete dataChannels[peerName];
+                }
+
+                if (state === "failed" || state === "closed") {
+                    delete peerConnections[peerName];
+                    delete pendingTransfers[peerName];
+                }
+            }
+        };
+
+        pc.oniceconnectionstatechange = () => {
+            if (pc.iceConnectionState === "failed") {
+                showToast(
+                    "Network negotiation failed",
+                    `No direct LAN route to ${peerName}.`,
+                    0
+                );
+            }
+        };
+
+        peerConnections[peerName] = pc;
+        return pc;
+    }
+
+    function createTransferId() {
+        if (
+            window.crypto &&
+            typeof window.crypto.randomUUID === "function"
+        ) {
+            return window.crypto.randomUUID();
+        }
+
+        const randomPart = Math.random()
+            .toString(36)
+            .substring(2, 12);
+
+        return `transfer-${Date.now()}-${randomPart}`;
+    }
+
+    async function ensureDataChannel(peerName, onOpen) {
+        const existingChannel = dataChannels[peerName];
+
+        if (existingChannel && existingChannel.readyState === "open") {
+            onOpen(existingChannel);
+            return;
+        }
+
+        if (existingChannel && existingChannel.readyState === "connecting") {
+            const oldPending = pendingTransfers[peerName];
+            if (oldPending?.timeoutId) clearTimeout(oldPending.timeoutId);
+
+            const timeoutId = setTimeout(() => {
+                showToast(
+                    "Connection timed out",
+                    `${peerName} did not complete the direct connection.`,
+                    0
+                );
+                cleanupPeer(peerName);
+            }, 15000);
+
+            pendingTransfers[peerName] = { onOpen, timeoutId };
+            return;
+        }
+
+        cleanupPeer(peerName);
+
+        const transferId = createTransferId();
+        const timeoutId = setTimeout(() => {
+            showToast(
+                "Connection timed out",
+                `${peerName} did not respond. Keep PMDrop open on both devices and try again.`,
+                0
+            );
+            cleanupPeer(peerName);
+        }, 15000);
+
+        pendingTransfers[peerName] = { onOpen, transferId, timeoutId };
+
+        const response = await sendSignal(peerName, "transfer_request", {
+            transferId,
+            mode: "channel"
+        });
+
+        if (!response) {
+            clearTimeout(timeoutId);
+            cleanupPeer(peerName);
+            showToast("Signaling failed", `Could not reach ${peerName}.`, 0);
+        }
+    }
+
+    async function startSender(peerName) {
+        cleanupPeerConnectionOnly(peerName);
+
+        const pc = createPeerConnection(peerName);
+        const channel = pc.createDataChannel("pmdrop", { ordered: true });
+        wireDataChannel(peerName, channel);
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        await sendSignal(peerName, "offer", pc.localDescription);
+    }
+
+    function startReceiver(peerName) {
+        cleanupPeerConnectionOnly(peerName);
+
+        const pc = createPeerConnection(peerName);
+
+        pc.ondatachannel = event => {
+            wireDataChannel(peerName, event.channel);
+        };
+
+        return pc;
+    }
+
+    function wireDataChannel(peerName, channel) {
+        dataChannels[peerName] = channel;
+        channel.binaryType = "arraybuffer";
+        channel.bufferedAmountLowThreshold = 2 * 1024 * 1024;
+
+        channel.onopen = () => {
+            const pending = pendingTransfers[peerName];
+
+            if (pending?.timeoutId) clearTimeout(pending.timeoutId);
+
+            if (pending?.onOpen) {
+                const callback = pending.onOpen;
+                delete pendingTransfers[peerName];
+                callback(channel);
+            }
+
+            showToast("Direct connection ready", `Connected to ${peerName}`, 100);
+        };
+
+        channel.onerror = () => {
+            showToast("Transfer channel error", `Connection to ${peerName} failed.`, 0);
+        };
+
+        channel.onclose = () => {
+            if (dataChannels[peerName] === channel) {
+                delete dataChannels[peerName];
+            }
+        };
+
+        let incomingFile = null;
+        let incomingChunks = [];
+        let incomingBytes = 0;
+
+        channel.onmessage = event => {
+            if (typeof event.data === "string") {
+                const msg = JSON.parse(event.data);
+
+                if (msg.type === "text") {
+                    showToast(`Text from ${peerName}`, msg.text.slice(0, 240), 100);
+                    alert(`📝 Text from ${peerName}:\n\n${msg.text}`);
+                }
+
+                if (msg.type === "file-meta") {
+                    incomingFile = msg;
+                    incomingChunks = [];
+                    incomingBytes = 0;
+                    incomingFile.startedAt = performance.now();
+                    createTransferCard(
+                        msg.transferId || `incoming-${Date.now()}`,
+                        msg.relativePath || msg.name,
+                        `Receiving from ${peerName}`,
+                        1
+                    );
+                }
+
+                if (msg.type === "file-done") {
+                    const blob = new Blob(incomingChunks, {
+                        type: incomingFile.mime || "application/octet-stream"
+                    });
+                    const a = document.createElement("a");
+                    a.href = URL.createObjectURL(blob);
+                    a.download = buildSafeDownloadName(
+                        incomingFile.relativePath || incomingFile.name
+                    );
+                    a.click();
+                    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+
+                    const incomingTransferId = incomingFile.transferId || `incoming-${Date.now()}`;
+                    updateTransferCard(
+                        incomingTransferId,
+                        incomingFile.relativePath || incomingFile.name,
+                        `Received from ${peerName}`,
+                        100,
+                        true
+                    );
+
+                    addTransferHistory({
+                        id: incomingTransferId,
+                        direction: "received",
+                        name: incomingFile.relativePath || incomingFile.name,
+                        peer: peerName,
+                        status: "completed",
+                        size: incomingFile.size,
+                        timestamp: Date.now(),
+                        folder: Boolean(incomingFile.folderTransfer)
+                    });
+
+                    showNotification(
+                        "PMDrop transfer complete",
+                        `${incomingFile.relativePath || incomingFile.name} was received from ${peerName}.`
+                    );
+
+                    incomingFile = null;
+                    incomingChunks = [];
+                    incomingBytes = 0;
+                }
+            } else {
+                incomingChunks.push(event.data);
+                incomingBytes += event.data.byteLength;
+
+                if (incomingFile) {
+                    const percent = Math.min(99, Math.round((incomingBytes / incomingFile.size) * 100));
+                    const elapsedSeconds = Math.max(
+                        (performance.now() - incomingFile.startedAt) / 1000,
+                        0.001
+                    );
+                    const bytesPerSecond = incomingBytes / elapsedSeconds;
+                    const remainingBytes = Math.max(incomingFile.size - incomingBytes, 0);
+                    const etaSeconds = bytesPerSecond > 0
+                        ? remainingBytes / bytesPerSecond
+                        : 0;
+
+                    updateTransferCard(
+                        incomingFile.transferId || `incoming-${peerName}`,
+                        incomingFile.relativePath || incomingFile.name,
+                        `${formatBytes(incomingBytes)} / ${formatBytes(incomingFile.size)} · ${formatSpeed(bytesPerSecond)} · ETA ${formatEta(etaSeconds)}`,
+                        percent
+                    );
+                }
+            }
+        };
+    }
+
+    async function sendDirectText(target, text) {
+        showToast("Opening direct channel", `To ${target}`, 12);
+
+        await ensureDataChannel(target, channel => {
+            channel.send(JSON.stringify({ type: "text", text }));
+            showToast("Text sent", `To ${target}`, 100);
+        });
+    }
+
+    async function startDirectFileTransfer(target, file) {
+        return startDirectFilesTransfer(target, [{ file, relativePath: file.name }], false);
+    }
+
+    async function startDirectFilesTransfer(target, items, isFolderTransfer = false) {
+        if (!items || items.length === 0) return;
+
+        const normalizedItems = items.map(item => {
+            if (item instanceof File) {
+                return { file: item, relativePath: item.name };
+            }
+            return {
+                file: item.file,
+                relativePath: item.relativePath || item.file.name
+            };
+        });
+
+        const totalBytes = normalizedItems.reduce((sum, item) => sum + item.file.size, 0);
+        const transferId = createTransferId();
+        const displayName = isFolderTransfer
+            ? getRootFolderName(normalizedItems)
+            : normalizedItems.length === 1
+                ? normalizedItems[0].file.name
+                : `${normalizedItems.length} files`;
+
+        createTransferCard(transferId, displayName, `Connecting to ${target}`, 0);
+
+        await ensureDataChannel(target, async channel => {
+            let completedBytes = 0;
+            const chunkSize = 256 * 1024;
+            const startedAt = performance.now();
+
+            for (let fileIndex = 0; fileIndex < normalizedItems.length; fileIndex++) {
+                const item = normalizedItems[fileIndex];
+                const file = item.file;
+
+                channel.send(JSON.stringify({
+                    type: "file-meta",
+                    transferId,
+                    name: file.name,
+                    relativePath: item.relativePath,
+                    size: file.size,
+                    mime: file.type || "application/octet-stream",
+                    index: fileIndex + 1,
+                    count: normalizedItems.length,
+                    folderTransfer: isFolderTransfer
+                }));
+
+                let offset = 0;
+
+                while (offset < file.size) {
+                    const slice = file.slice(offset, offset + chunkSize);
+                    const buffer = await slice.arrayBuffer();
+
+                    while (channel.bufferedAmount > 8 * 1024 * 1024) {
+                        await sleep(40);
+                    }
+
+                    channel.send(buffer);
+                    offset += buffer.byteLength;
+
+                    const overallSent = completedBytes + offset;
+                    const percent = totalBytes > 0
+                        ? Math.min(99, Math.round((overallSent / totalBytes) * 100))
+                        : 99;
+
+                    const elapsedSeconds = Math.max((performance.now() - startedAt) / 1000, 0.001);
+                    const bytesPerSecond = overallSent / elapsedSeconds;
+                    const remainingBytes = Math.max(totalBytes - overallSent, 0);
+                    const etaSeconds = bytesPerSecond > 0 ? remainingBytes / bytesPerSecond : 0;
+
+                    updateTransferCard(
+                        transferId,
+                        file.name,
+                        `${formatBytes(overallSent)} / ${formatBytes(totalBytes)} · ${formatSpeed(bytesPerSecond)} · ETA ${formatEta(etaSeconds)}`,
+                        percent
+                    );
+                }
+
+                channel.send(JSON.stringify({
+                    type: "file-done",
+                    transferId,
+                    name: file.name,
+                    relativePath: item.relativePath,
+                    index: fileIndex + 1,
+                    count: normalizedItems.length
+                }));
+
+                completedBytes += file.size;
+                await sleep(80);
+            }
+
+            updateTransferCard(
+                transferId,
+                displayName,
+                `Sent to ${target}`,
+                100,
+                true
+            );
+
+            addTransferHistory({
+                id: transferId,
+                direction: "sent",
+                name: displayName,
+                peer: target,
+                status: "completed",
+                size: totalBytes,
+                timestamp: Date.now(),
+                folder: isFolderTransfer
+            });
+
+            showNotification("PMDrop transfer complete", `${displayName} was sent to ${target}.`);
+        });
+    }
+
+    async function pollSignals() {
+        if (signalPollInProgress) return;
+        signalPollInProgress = true;
+
+        try {
+            const response = await fetch(
+                `/signal/${encodeURIComponent(getBrowserDeviceName())}`,
+                { cache: "no-store" }
+            );
+
+            if (!response.ok) return;
+
+            const data = await response.json();
+
+            for (const signal of data.signals || []) {
+                try {
+                    if (signal.type === "transfer_request") {
+                        const accepted = confirm(
+                            `Incoming PMDrop connection from ${signal.sender}
+
+Accept?`
+                        );
+
+                        if (accepted) {
+                            startReceiver(signal.sender);
+                            await sendSignal(
+                                signal.sender,
+                                "transfer_accept",
+                                signal.payload || {}
+                            );
+                        } else {
+                            await sendSignal(
+                                signal.sender,
+                                "transfer_reject",
+                                signal.payload || {}
+                            );
+                        }
+                    }
+
+                    if (signal.type === "transfer_accept") {
+                        await startSender(signal.sender);
+                    }
+
+                    if (signal.type === "transfer_reject") {
+                        showToast(
+                            "Transfer declined",
+                            `${signal.sender} declined the connection.`,
+                            0
+                        );
+                        cleanupPeer(signal.sender);
+                    }
+
+                    if (signal.type === "offer") {
+                        await handleOffer(signal);
+                    }
+
+                    if (signal.type === "answer") {
+                        await handleAnswer(signal);
+                    }
+
+                    if (signal.type === "ice") {
+                        await handleIce(signal);
+                    }
+                } catch (error) {
+                    console.error("Signal handling failed:", signal, error);
+                    showToast(
+                        "Connection error",
+                        `Could not process a WebRTC message from ${signal.sender}.`,
+                        0
+                    );
+                }
+            }
+        } catch (error) {
+            console.error("Signal polling failed:", error);
+        } finally {
+            signalPollInProgress = false;
+        }
+    }
+
+    async function handleOffer(signal) {
+        const peerName = signal.sender;
+        let pc = peerConnections[peerName];
+
+        if (!pc) {
+            pc = startReceiver(peerName);
+        }
+
+        await pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
+        await flushPendingIce(peerName);
+
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        await sendSignal(peerName, "answer", pc.localDescription);
+    }
+
+    async function handleAnswer(signal) {
+        const peerName = signal.sender;
+        const pc = peerConnections[peerName];
+
+        if (!pc) {
+            console.warn("Answer received before peer connection:", peerName);
+            return;
+        }
+
+        await pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
+        await flushPendingIce(peerName);
+    }
+
+    async function handleIce(signal) {
+        const peerName = signal.sender;
+        const candidate = new RTCIceCandidate(signal.payload);
+        const pc = peerConnections[peerName];
+
+        if (!pc || !pc.remoteDescription) {
+            if (!pendingIceCandidates[peerName]) {
+                pendingIceCandidates[peerName] = [];
+            }
+
+            pendingIceCandidates[peerName].push(candidate);
+            return;
+        }
+
+        try {
+            await pc.addIceCandidate(candidate);
+        } catch (error) {
+            console.warn("ICE candidate error:", error);
+        }
+    }
+
+    async function flushPendingIce(peerName) {
+        const pc = peerConnections[peerName];
+        const queued = pendingIceCandidates[peerName] || [];
+
+        if (!pc || !pc.remoteDescription || queued.length === 0) return;
+
+        for (const candidate of queued) {
+            try {
+                await pc.addIceCandidate(candidate);
+            } catch (error) {
+                console.warn("Queued ICE candidate error:", error);
+            }
+        }
+
+        delete pendingIceCandidates[peerName];
+    }
+
+    function cleanupPeerConnectionOnly(peerName) {
+        const channel = dataChannels[peerName];
+        if (channel) {
+            try { channel.close(); } catch (_) {}
+            delete dataChannels[peerName];
+        }
+
+        const pc = peerConnections[peerName];
+        if (pc) {
+            try { pc.close(); } catch (_) {}
+            delete peerConnections[peerName];
+        }
+
+        delete pendingIceCandidates[peerName];
+    }
+
+    function cleanupPeer(peerName) {
+        const pending = pendingTransfers[peerName];
+        if (pending?.timeoutId) clearTimeout(pending.timeoutId);
+
+        delete pendingTransfers[peerName];
+        cleanupPeerConnectionOnly(peerName);
+    }
+
+
+    function createTransferCard(id, title, meta, progress) {
+        let card = document.getElementById(`transfer-${id}`);
+
+        if (!card) {
+            card = document.createElement("div");
+            card.className = "transfer-card";
+            card.id = `transfer-${id}`;
+            card.innerHTML = `
+                <div class="transfer-card-head">
+                    <div class="transfer-card-title"></div>
+                    <div class="history-status"></div>
+                </div>
+                <div class="transfer-card-meta"></div>
+                <div class="transfer-card-progress"><div></div></div>
+            `;
+            document.getElementById("transferCenter").appendChild(card);
+        }
+
+        activeTransferCards[id] = card;
+        updateTransferCard(id, title, meta, progress);
+    }
+
+    function updateTransferCard(id, title, meta, progress, completed = false) {
+        const card = activeTransferCards[id] || document.getElementById(`transfer-${id}`);
+        if (!card) {
+            createTransferCard(id, title, meta, progress);
+            return;
+        }
+
+        card.querySelector(".transfer-card-title").innerText = title;
+        card.querySelector(".transfer-card-meta").innerText = meta;
+        card.querySelector(".history-status").innerText = completed ? "DONE" : `${Math.round(progress)}%`;
+        card.querySelector(".transfer-card-progress > div").style.width = `${Math.max(0, Math.min(100, progress))}%`;
+
+        if (completed) {
+            setTimeout(() => {
+                card.remove();
+                delete activeTransferCards[id];
+            }, 4500);
+        }
+    }
+
+    function getTransferHistory() {
+        try {
+            return JSON.parse(localStorage.getItem(TRANSFER_HISTORY_KEY) || "[]");
+        } catch (_) {
+            return [];
+        }
+    }
+
+    function addTransferHistory(entry) {
+        const history = getTransferHistory();
+        history.unshift(entry);
+        localStorage.setItem(
+            TRANSFER_HISTORY_KEY,
+            JSON.stringify(history.slice(0, 100))
+        );
+        renderTransferHistory();
+    }
+
+    function clearTransferHistory() {
+        localStorage.removeItem(TRANSFER_HISTORY_KEY);
+        renderTransferHistory();
+    }
+
+    function renderTransferHistory() {
+        const container = document.getElementById("transferHistory");
+        if (!container) return;
+
+        const history = getTransferHistory();
+
+        if (history.length === 0) {
+            container.innerHTML = `<div class="muted">No transfers yet.</div>`;
+            return;
+        }
+
+        container.innerHTML = history.map(item => `
+            <div class="history-item">
+                <div class="history-icon">${item.folder ? "📂" : "📄"}</div>
+                <div>
+                    <div class="history-name">${escapeHtml(item.name)}</div>
+                    <div class="history-meta">
+                        ${item.direction === "sent" ? "Sent to" : "Received from"}
+                        ${escapeHtml(item.peer)} · ${formatBytes(item.size || 0)} ·
+                        ${new Date(item.timestamp).toLocaleString()}
+                    </div>
+                </div>
+                <div class="history-status">${item.status === "completed" ? "DONE" : escapeHtml(item.status)}</div>
+            </div>
+        `).join("");
+    }
+
+    async function requestNotificationPermission() {
+        if (!("Notification" in window)) {
+            showToast("Notifications unavailable", "This browser does not support notifications.", 0);
+            return;
+        }
+
+        const permission = await Notification.requestPermission();
+        showToast(
+            permission === "granted" ? "Notifications enabled" : "Notifications not enabled",
+            permission === "granted" ? "PMDrop can notify you when transfers finish." : "You can enable them later in browser settings.",
+            permission === "granted" ? 100 : 0
+        );
+    }
+
+    function showNotification(title, body) {
+        if ("Notification" in window && Notification.permission === "granted") {
+            new Notification(title, { body });
+        }
+    }
+
+    function formatBytes(bytes) {
+        if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+        const units = ["B", "KB", "MB", "GB", "TB"];
+        const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+        const value = bytes / Math.pow(1024, index);
+        return `${value >= 100 || index === 0 ? value.toFixed(0) : value.toFixed(1)} ${units[index]}`;
+    }
+
+    function formatSpeed(bytesPerSecond) {
+        return `${formatBytes(bytesPerSecond)}/s`;
+    }
+
+    function formatEta(seconds) {
+        if (!Number.isFinite(seconds) || seconds <= 1) return "<1s";
+        if (seconds < 60) return `${Math.ceil(seconds)}s`;
+        const minutes = Math.floor(seconds / 60);
+        const remaining = Math.ceil(seconds % 60);
+        return `${minutes}m ${remaining}s`;
+    }
+
+    function getRootFolderName(items) {
+        const firstPath = items[0]?.relativePath || "Folder";
+        return firstPath.split("/")[0] || "Folder";
+    }
+
+    function buildSafeDownloadName(relativePath) {
+        return String(relativePath || "download")
+            .replace(/^\/+/, "")
+            .replace(/[\\/]+/g, "__");
+    }
+
+    function showToast(title, text = "", progress = null) {
+        const toast = document.getElementById("toast");
+        document.getElementById("toastTitle").innerText = title;
+        document.getElementById("toastText").innerText = text;
+
+        if (progress === null) {
+            document.getElementById("toastProgress").style.width = "0%";
+        } else {
+            document.getElementById("toastProgress").style.width = `${progress}%`;
+        }
+
+        toast.classList.add("show");
+
+        if (progress === 100 || progress === 0) {
+            setTimeout(() => toast.classList.remove("show"), 3500);
+        }
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function escapeJs(value) {
+        return String(value).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+
+    async function loadAll() {
+        await loadStats();
+        await loadFiles();
+        await loadDevices();
+    }
 
     registerThisDevice();
     heartbeatThisDevice();
+    updateSettingsPanel();
+    renderTransferHistory();
     loadAll();
+
     setInterval(heartbeatThisDevice, 10000);
     setInterval(loadAll, 5000);
-    setInterval(pollSignals, 1000);
+    setInterval(pollSignals, 700);
 </script>
 </body>
 </html>
