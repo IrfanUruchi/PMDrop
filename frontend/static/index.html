@@ -776,7 +776,7 @@
             <div class="brand-logo">↗</div>
             <div>
                 <h1>PMDrop</h1>
-                <p>Private local transfer · v0.3</p>
+                <p>Private local transfer · v0.3.3</p>
             </div>
         </div>
 
@@ -945,6 +945,48 @@
     </div>
 </div>
 
+
+<div id="incomingTransferModal" class="modal">
+    <div class="modal-card" style="width:min(560px,100%);">
+        <div style="display:flex;align-items:flex-start;gap:18px;">
+            <div id="incomingTransferIcon" class="device-icon" style="flex:0 0 auto;">📥</div>
+            <div style="min-width:0;">
+                <h2 class="modal-title" style="font-size:32px;">Incoming transfer</h2>
+                <div class="modal-sub" id="incomingTransferFrom">From another device</div>
+            </div>
+        </div>
+
+        <div style="
+            margin-top:22px;
+            padding:18px;
+            border-radius:24px;
+            background:rgba(2,6,23,.42);
+            border:1px solid var(--border);
+        ">
+            <div id="incomingTransferName" style="
+                font-size:21px;
+                font-weight:950;
+                word-break:break-word;
+            ">Transfer</div>
+
+            <div id="incomingTransferDetails" class="muted" style="
+                margin-top:10px;
+                line-height:1.7;
+            "></div>
+        </div>
+
+        <div style="
+            display:flex;
+            justify-content:flex-end;
+            gap:10px;
+            margin-top:22px;
+        ">
+            <button class="danger" onclick="declineIncomingTransfer()">Decline</button>
+            <button class="primary" onclick="acceptIncomingTransfer()">Accept</button>
+        </div>
+    </div>
+</div>
+
 <div id="textModal" class="modal">
     <div class="modal-card">
         <h2 class="modal-title">Send Text</h2>
@@ -983,7 +1025,12 @@
     const pendingIceCandidates = {};
     let signalPollInProgress = false;
     const TRANSFER_HISTORY_KEY = "pmdrop_transfer_history";
+    const PENDING_INCOMING_KEY = "pmdrop_pending_incoming";
+    const PENDING_INCOMING_TTL_MS = 5 * 60 * 1000;
     const activeTransferCards = {};
+    let pendingIncomingRequest = null;
+    let pendingIncomingResolver = null;
+    const displayedIncomingSignalIds = new Set();
 
     function getBrowserDeviceName() {
         let savedName = localStorage.getItem(DEVICE_NAME_KEY);
@@ -1357,6 +1404,133 @@
         }
     }
 
+
+    function showIncomingTransferModal(signal) {
+        return new Promise(resolve => {
+            const payload = signal.payload || {};
+            pendingIncomingRequest = signal;
+            pendingIncomingResolver = resolve;
+
+            localStorage.setItem(
+                PENDING_INCOMING_KEY,
+                JSON.stringify({
+                    signal,
+                    savedAt: Date.now()
+                })
+            );
+
+            const kind = payload.kind || "connection";
+            const icon = kind === "folder"
+                ? "📂"
+                : kind === "text"
+                    ? "📝"
+                    : kind === "clipboard"
+                        ? "📋"
+                        : "📄";
+
+            const name = payload.name ||
+                (kind === "text" ? "Text message" : "Direct transfer");
+
+            const details = [];
+
+            if (payload.count && payload.count > 1) {
+                details.push(`${payload.count} files`);
+            } else if (payload.count === 1) {
+                details.push("1 file");
+            }
+
+            if (Number.isFinite(payload.size)) {
+                details.push(formatBytes(payload.size));
+            }
+
+            if (kind === "folder") {
+                details.push("Folder transfer");
+            } else if (kind === "text") {
+                details.push("Text");
+            } else if (kind === "clipboard") {
+                details.push("Clipboard");
+            } else {
+                details.push("Direct browser transfer");
+            }
+
+            document.getElementById("incomingTransferIcon").innerText = icon;
+            document.getElementById("incomingTransferFrom").innerText =
+                `From ${signal.sender}`;
+            document.getElementById("incomingTransferName").innerText = name;
+            document.getElementById("incomingTransferDetails").innerHTML =
+                details.map(item => `<div>${escapeHtml(item)}</div>`).join("");
+
+            document.getElementById("incomingTransferModal").classList.add("show");
+        });
+    }
+
+    function closeIncomingTransferModal() {
+        document.getElementById("incomingTransferModal").classList.remove("show");
+    }
+
+    function acceptIncomingTransfer() {
+        if (!pendingIncomingResolver) return;
+
+        const resolve = pendingIncomingResolver;
+        pendingIncomingResolver = null;
+        pendingIncomingRequest = null;
+        localStorage.removeItem(PENDING_INCOMING_KEY);
+        closeIncomingTransferModal();
+        resolve(true);
+    }
+
+    function declineIncomingTransfer() {
+        if (!pendingIncomingResolver) return;
+
+        const resolve = pendingIncomingResolver;
+        pendingIncomingResolver = null;
+        pendingIncomingRequest = null;
+        localStorage.removeItem(PENDING_INCOMING_KEY);
+        closeIncomingTransferModal();
+        resolve(false);
+    }
+
+
+    async function restorePendingIncomingTransfer() {
+        const raw = localStorage.getItem(PENDING_INCOMING_KEY);
+        if (!raw) return;
+
+        try {
+            const saved = JSON.parse(raw);
+            const age = Date.now() - Number(saved.savedAt || 0);
+
+            if (
+                !saved.signal ||
+                !saved.signal.sender ||
+                age < 0 ||
+                age > PENDING_INCOMING_TTL_MS
+            ) {
+                localStorage.removeItem(PENDING_INCOMING_KEY);
+                return;
+            }
+
+            const accepted = await showIncomingTransferModal(saved.signal);
+
+            if (accepted) {
+                startReceiver(saved.signal.sender);
+                await sendSignal(
+                    saved.signal.sender,
+                    "transfer_accept",
+                    saved.signal.payload || {}
+                );
+            } else {
+                await sendSignal(
+                    saved.signal.sender,
+                    "transfer_reject",
+                    saved.signal.payload || {}
+                );
+            }
+        } catch (error) {
+            console.error("Could not restore pending transfer:", error);
+            localStorage.removeItem(PENDING_INCOMING_KEY);
+        }
+    }
+
     function openDeviceModal(device) {
         selectedActionDevice = device;
         document.getElementById("deviceModalTitle").innerText = `${getDeviceEmoji(device.name)} ${device.name}`;
@@ -1465,6 +1639,26 @@
         }
     }
 
+    async function acknowledgeSignal(signalId) {
+        if (!signalId) return false;
+
+        try {
+            const response = await fetch("/signal/ack", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    signal_id: signalId,
+                    device_name: getBrowserDeviceName()
+                })
+            });
+
+            return response.ok || response.status === 404;
+        } catch (error) {
+            console.error("Signal acknowledgement failed:", error);
+            return false;
+        }
+    }
+
     function createPeerConnection(peerName) {
         const existing = peerConnections[peerName];
         if (existing && existing.connectionState !== "closed") {
@@ -1538,7 +1732,7 @@
         return `transfer-${Date.now()}-${randomPart}`;
     }
 
-    async function ensureDataChannel(peerName, onOpen) {
+    async function ensureDataChannel(peerName, onOpen, requestMeta = {}) {
         const existingChannel = dataChannels[peerName];
 
         if (existingChannel && existingChannel.readyState === "open") {
@@ -1553,11 +1747,11 @@
             const timeoutId = setTimeout(() => {
                 showToast(
                     "Connection timed out",
-                    `${peerName} did not complete the direct connection.`,
+                    `${peerName} did not complete the direct connection within one minute.`,
                     0
                 );
                 cleanupPeer(peerName);
-            }, 15000);
+            }, 60000);
 
             pendingTransfers[peerName] = { onOpen, timeoutId };
             return;
@@ -1569,17 +1763,18 @@
         const timeoutId = setTimeout(() => {
             showToast(
                 "Connection timed out",
-                `${peerName} did not respond. Keep PMDrop open on both devices and try again.`,
+                `${peerName} did not respond within one minute. Keep PMDrop open on both devices and try again.`,
                 0
             );
             cleanupPeer(peerName);
-        }, 15000);
+        }, 60000);
 
         pendingTransfers[peerName] = { onOpen, transferId, timeoutId };
 
         const response = await sendSignal(peerName, "transfer_request", {
             transferId,
-            mode: "channel"
+            mode: "channel",
+            ...requestMeta
         });
 
         if (!response) {
@@ -1739,10 +1934,19 @@
     async function sendDirectText(target, text) {
         showToast("Opening direct channel", `To ${target}`, 12);
 
-        await ensureDataChannel(target, channel => {
-            channel.send(JSON.stringify({ type: "text", text }));
-            showToast("Text sent", `To ${target}`, 100);
-        });
+        await ensureDataChannel(
+            target,
+            channel => {
+                channel.send(JSON.stringify({ type: "text", text }));
+                showToast("Text sent", `To ${target}`, 100);
+            },
+            {
+                kind: "text",
+                name: "Text message",
+                size: new Blob([text]).size,
+                count: 1
+            }
+        );
     }
 
     async function startDirectFileTransfer(target, file) {
@@ -1772,7 +1976,9 @@
 
         createTransferCard(transferId, displayName, `Connecting to ${target}`, 0);
 
-        await ensureDataChannel(target, async channel => {
+        await ensureDataChannel(
+            target,
+            async channel => {
             let completedBytes = 0;
             const chunkSize = 256 * 1024;
             const startedAt = performance.now();
@@ -1857,7 +2063,18 @@
             });
 
             showNotification("PMDrop transfer complete", `${displayName} was sent to ${target}.`);
-        });
+            },
+            {
+                kind: isFolderTransfer
+                    ? "folder"
+                    : normalizedItems.length > 1
+                        ? "files"
+                        : "file",
+                name: displayName,
+                size: totalBytes,
+                count: normalizedItems.length
+            }
+        );
     }
 
     async function pollSignals() {
@@ -1877,11 +2094,13 @@
             for (const signal of data.signals || []) {
                 try {
                     if (signal.type === "transfer_request") {
-                        const accepted = confirm(
-                            `Incoming PMDrop connection from ${signal.sender}
+                        if (displayedIncomingSignalIds.has(signal.id)) {
+                            continue;
+                        }
 
-Accept?`
-                        );
+                        displayedIncomingSignalIds.add(signal.id);
+
+                        const accepted = await showIncomingTransferModal(signal);
 
                         if (accepted) {
                             startReceiver(signal.sender);
@@ -1897,6 +2116,9 @@ Accept?`
                                 signal.payload || {}
                             );
                         }
+
+                        await acknowledgeSignal(signal.id);
+                        displayedIncomingSignalIds.delete(signal.id);
                     }
 
                     if (signal.type === "transfer_accept") {
@@ -2215,11 +2437,25 @@ Accept?`
         await loadDevices();
     }
 
+
+    document.addEventListener("keydown", event => {
+        if (event.key !== "Escape") return;
+
+        if (document.getElementById("incomingTransferModal").classList.contains("show")) {
+            declineIncomingTransfer();
+            return;
+        }
+
+        closeDeviceModal();
+        closeTextModal();
+    });
+
     registerThisDevice();
     heartbeatThisDevice();
     updateSettingsPanel();
     renderTransferHistory();
     loadAll();
+
 
     setInterval(heartbeatThisDevice, 10000);
     setInterval(loadAll, 5000);

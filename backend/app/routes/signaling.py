@@ -5,12 +5,12 @@ import time
 import uuid
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 router = APIRouter()
 
-SIGNAL_TTL_SECONDS = 60
+SIGNAL_TTL_SECONDS = 300
 
 signals: list[dict[str, Any]] = []
 signals_lock = asyncio.Lock()
@@ -21,6 +21,11 @@ class SignalMessage(BaseModel):
     target: str = Field(min_length=1, max_length=64)
     type: str = Field(min_length=1, max_length=32)
     payload: dict[str, Any] = Field(default_factory=dict)
+
+
+class SignalAck(BaseModel):
+    signal_id: str = Field(min_length=1)
+    device_name: str = Field(min_length=1, max_length=64)
 
 
 def remove_expired_signals(now: float) -> None:
@@ -42,6 +47,7 @@ async def send_signal(message: SignalMessage):
         "type": message.type,
         "payload": message.payload,
         "created_at": now,
+        "delivered": False,
     }
 
     async with signals_lock:
@@ -49,9 +55,8 @@ async def send_signal(message: SignalMessage):
         signals.append(signal)
 
     print(
-        f"[SIGNAL SEND] "
-        f"{message.sender} -> {message.target} "
-        f"type={message.type}"
+        f"[SIGNAL SEND] {message.sender} -> {message.target} "
+        f"type={message.type} id={signal['id']}"
     )
 
     return {
@@ -67,34 +72,65 @@ async def get_signals(device_name: str):
     async with signals_lock:
         remove_expired_signals(now)
 
-        inbox = [
-            signal
-            for signal in signals
-            if signal["target"] == device_name
-        ]
+        inbox: list[dict[str, Any]] = []
+        removable_ids: set[str] = set()
 
-        delivered_ids = {signal["id"] for signal in inbox}
+        for signal in signals:
+            if signal["target"] != device_name:
+                continue
 
-        signals[:] = [
-            signal
-            for signal in signals
-            if signal["id"] not in delivered_ids
-        ]
+            inbox.append(signal.copy())
+
+            # Transfer requests remain queued until explicit ACK.
+            if signal["type"] == "transfer_request":
+                signal["delivered"] = True
+            else:
+                removable_ids.add(signal["id"])
+
+        if removable_ids:
+            signals[:] = [
+                signal
+                for signal in signals
+                if signal["id"] not in removable_ids
+            ]
 
     if inbox:
-        signal_types = ", ".join(signal["type"] for signal in inbox)
-
         print(
-            f"[SIGNAL RECEIVE] "
-            f"target={device_name} "
+            f"[SIGNAL RECEIVE] target={device_name} "
             f"count={len(inbox)} "
-            f"types={signal_types}"
+            f"types={','.join(item['type'] for item in inbox)}"
         )
 
     return {
         "signals": inbox,
         "count": len(inbox),
     }
+
+
+@router.post("/signal/ack")
+async def acknowledge_signal(ack: SignalAck):
+    async with signals_lock:
+        matching = next(
+            (
+                signal
+                for signal in signals
+                if signal["id"] == ack.signal_id
+                and signal["target"] == ack.device_name
+            ),
+            None,
+        )
+
+        if matching is None:
+            raise HTTPException(status_code=404, detail="Signal not found")
+
+        signals.remove(matching)
+
+    print(
+        f"[SIGNAL ACK] target={ack.device_name} "
+        f"type={matching['type']} id={ack.signal_id}"
+    )
+
+    return {"success": True}
 
 
 @router.get("/signal-debug")
@@ -110,6 +146,7 @@ async def signal_debug():
                 "sender": signal["sender"],
                 "target": signal["target"],
                 "type": signal["type"],
+                "delivered": signal["delivered"],
                 "age_seconds": round(now - signal["created_at"], 2),
             }
             for signal in signals
