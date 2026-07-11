@@ -1,0 +1,22 @@
+services:
+  pmdrop:
+    image: pmdrop:0.4.0
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: pmdrop
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - pmdrop_database:/app/backend/data
+      - pmdrop_storage:/app/backend/storage
+
+    restart: unless-stopped
+
+volumes:
+  pmdrop_database:
+  pmdrop_storage:
